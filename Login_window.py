@@ -4,6 +4,10 @@
 # Version: 1.0
 
 from tkinter import *
+import json
+
+with open("database.json", "r+") as f:
+    saved_users =json.load(f)
 
 class Window:
     def __init__ (self):
@@ -89,6 +93,16 @@ class Window:
         self.root.mainloop()
 
     def username_entry_getter(self):
+        global saved_users
         users_username = self.username_entry.get()
         users_password = self.password_entry.get()
-        return print(users_username, users_password)
+        if users_username in saved_users:
+            if saved_users[users_username]["password"] == users_password:
+                self.entry_window()
+            else:
+                return print("Error, incorrect username or password")
+        else:
+            return print("Error, incorrect username or password")
+    
+    def entry_window(self):
+        self.login.destroy()
