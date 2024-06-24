@@ -1,0 +1,28 @@
+{
+    "Username" :{
+        "password" : "Password",
+        "profiles" : {
+            "profile1":{
+                "task1":"This is task 1 for profile 1",
+                "task2":"This is task 2 for profile 1"
+            },
+            "profile2":{
+                "task1":"This is task 1 for profile 2",
+                "task2":"This is task 2 for profile 2"
+            }
+        }
+    },
+    "Andrew" :{
+        "password" : "Wood",
+        "profiles" : {
+            "profile1":{
+                "task1":"This is task 1 for profile 1",
+                "task2":"This is task 2 for profile 1"
+            },
+            "profile2":{
+                "task1":"This is task 1 for profile 2",
+                "task2":"This is task 2 for profile 2"
+            }
+        }
+    }
+}
