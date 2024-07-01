@@ -4,6 +4,7 @@
 # Version: 1.0
 
 from tkinter import *
+from tkinter import messagebox
 import json
 
 with open("database.json", "r+") as f:
@@ -22,7 +23,6 @@ class Window:
         # Size of GUI window from paint root.geometry("575x370")
         # Size of GUI including border from paint
         self.root.geometry("586x370")
-        self.root.resizable(0,0)
 
         # Window sizing
         self.root.columnconfigure((0,2), weight= 7)
@@ -60,6 +60,7 @@ class Window:
         self.username_entry = Entry(self.username)
         self.username_entry.insert(0, self.username_entry_default)
         self.username_entry.grid(column=1, row=0, sticky="NESW")
+        self.username_entry.bind("<Enter>", lambda e: self.entry_remove(self.username_entry))
 
         # FRAME 3 for Password entry and image
         self.password = Frame(self.login, bg="white", borderwidth=2, relief=SOLID)
@@ -78,6 +79,8 @@ class Window:
         self.password_entry = Entry(self.password)
         self.password_entry.insert(0, self.password_entry_default)
         self.password_entry.grid(column=1, row=0, sticky="NESW")
+        self.password_entry.bind("<Enter>", lambda e: self.entry_remove(self.password_entry))
+        self.password_entry.bind("<Return>", lambda e: self.entry_getter())
 
         # FRAME 4 for login button
         self.login_button_frame = Frame(self.login, bg=self.LIGHT_BG_COLOUR, borderwidth=2, relief=SOLID)
@@ -87,12 +90,12 @@ class Window:
 
         # Login button for frame 4
         self.login_button_text = "Login"
-        self.login_button = Button(self.login_button_frame, text=self.login_button_text, bg=self.LIGHT_BG_COLOUR, font=self.COMMON_FONT, command=lambda: self.username_entry_getter())
+        self.login_button = Button(self.login_button_frame, text=self.login_button_text, bg=self.LIGHT_BG_COLOUR, font=self.COMMON_FONT, command=lambda: self.entry_getter())
         self.login_button.grid(column=0, row=0, sticky="NESW")
 
         self.root.mainloop()
 
-    def username_entry_getter(self):
+    def entry_getter(self):
         global saved_users
         users_username = self.username_entry.get()
         users_password = self.password_entry.get()
@@ -100,9 +103,18 @@ class Window:
             if saved_users[users_username]["password"] == users_password:
                 self.entry_window()
             else:
-                return print("Error, incorrect username or password")
+                messagebox.showerror("Error", "Invalid input: Please enter the correct username or password", parent=self.root)
         else:
-            return print("Error, incorrect username or password")
+            messagebox.showerror("Error", "Invalid input: Please enter the correct username or password", parent=self.root)
+        
+    def entry_remove(self, entry):
+        if entry == self.username_entry:
+            if self.username_entry.get() == "Username":
+                entry.delete(0, END)
+        if entry == self.password_entry:
+            if self.password_entry.get() == "Password":
+                entry.delete(0, END)
+                entry.configure(show="*")
     
     def entry_window(self):
         self.login.destroy()
