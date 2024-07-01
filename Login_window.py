@@ -101,7 +101,8 @@ class Window:
         users_password = self.password_entry.get()
         if users_username in saved_users:
             if saved_users[users_username]["password"] == users_password:
-                self.entry_window()
+                self.login.destroy()
+                self.entry_window(users_username)
             else:
                 messagebox.showerror("Error", "Invalid input: Please enter the correct username or password", parent=self.root)
         else:
@@ -116,5 +117,37 @@ class Window:
                 entry.delete(0, END)
                 entry.configure(show="*")
     
-    def entry_window(self):
-        self.login.destroy()
+    def entry_window(self, user_username):
+
+        # Changed Window sizing to fit new grid
+        self.root.columnconfigure((0,2,4,6,8), weight= 2)
+        self.root.columnconfigure((1,3,5), weight = 4)
+        self.root.rowconfigure((0,2,4,6,8), weight = 1)
+        self.root.rowconfigure((1,3,5), weight = 4)
+
+        # Label welcoming user
+        self.entry_welcome_text = f"Welcome {user_username}, please select an option."
+        self.entry_welcome_label = Label(self.root, text=self.entry_welcome_text, font=(self.COMMON_FONT))
+        self.entry_welcome_label.grid(column=1, row=0, columnspan= 6, sticky="NESW")
+
+        # FRAME 1 for Entry window
+        self.login_edit_frame = Frame(self.root, borderwidth=2, relief=SOLID)
+        self.login_edit_frame.grid(column=1, row=1, sticky="NESW")
+        self.login_edit_frame.columnconfigure((0), weight= 1)
+        self.login_edit_frame.rowconfigure((0), weight = 1)
+
+        # Button 1 Profile edit for Entry window in FRAME 1
+        self.login_edit_button_text = "Edit Login"
+        self.login_edit_button = Button(self.login_edit_frame, text=self.login_edit_button_text, anchor="n")
+        self.login_edit_button.grid(column=0, row=0, sticky="NESW")
+
+        # FRAME 2 for Entry window
+        self.profile_enter_frame = Frame(self.root, borderwidth=2, relief=SOLID)
+        self.profile_enter_frame.grid(column=3, row=1, sticky="NESW")
+        self.profile_enter_frame.columnconfigure((0), weight= 1)
+        self.profile_enter_frame.rowconfigure((0), weight = 1)
+
+        # Button 2 Profile enter for entry window in  FRAME 2
+        self.profile_enter_button_text = "Select Profile"
+        self.profile_enter_button = Button(self.profile_enter_frame, text=self.profile_enter_button_text, anchor="n")
+        self.profile_enter_button.grid(column=0, row=0, sticky="NESW")
