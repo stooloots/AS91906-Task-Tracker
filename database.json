@@ -9,6 +9,14 @@
             "profile2":{
                 "task1":"This is task 1 for profile 2",
                 "task2":"This is task 2 for profile 2"
+            },
+            "profile3":{
+                "task1":"This is task 1 for profile 3",
+                "task2":"This is task 2 for profile 3"
+            },
+            "profile4":{
+                "task1":"This is task 1 for profile 4",
+                "task2":"This is task 2 for profile 4"
             }
         }
     },
@@ -18,6 +26,32 @@
             "profile1":{
                 "task1":"This is task 1 for profile 1",
                 "task2":"This is task 2 for profile 1"
+            },
+            "profile2":{
+                "task1":"This is task 1 for profile 2",
+                "task2":"This is task 2 for profile 2"
+            }
+        }
+    },
+    "Squeeser" :{
+        "password" : "Reed",
+        "profiles" : {
+            "profile1":{
+                "task1":"This is task 1 for profile 1",
+                "task2":"This is task 2 for profile 1"
+            },
+            "profile2":{
+                "task1":"This is task 1 for profile 2",
+                "task2":"This is task 2 for profile 2"
+            }
+        }
+    },
+    "JHack-wantis" :{
+        "password" : "buddy-holly",
+        "profiles" : {
+            "profile1":{
+                "task1":"Passwordss :3",
+                "task2":"Time to get freaky in the task manager😜"
             },
             "profile2":{
                 "task1":"This is task 1 for profile 2",

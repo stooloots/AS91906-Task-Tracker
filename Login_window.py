@@ -6,6 +6,7 @@
 from tkinter import *
 from tkinter import messagebox
 import json
+import math
 
 with open("database.json", "r+") as f:
     saved_users =json.load(f)
@@ -80,7 +81,7 @@ class Window:
         self.password_entry.insert(0, self.password_entry_default)
         self.password_entry.grid(column=1, row=0, sticky="NESW")
         self.password_entry.bind("<Enter>", lambda e: self.entry_remove(self.password_entry))
-        self.password_entry.bind("<Return>", lambda e: self.entry_getter())
+        self.password_entry.bind("<Return>", self.entry_getter)
 
         # FRAME 4 for login button
         self.login_button_frame = Frame(self.login, bg=self.LIGHT_BG_COLOUR, borderwidth=2, relief=SOLID)
@@ -90,12 +91,12 @@ class Window:
 
         # Login button for frame 4
         self.login_button_text = "Login"
-        self.login_button = Button(self.login_button_frame, text=self.login_button_text, bg=self.LIGHT_BG_COLOUR, font=self.COMMON_FONT, command=lambda: self.entry_getter())
+        self.login_button = Button(self.login_button_frame, text=self.login_button_text, bg=self.LIGHT_BG_COLOUR, font=self.COMMON_FONT, command= self.entry_getter)
         self.login_button.grid(column=0, row=0, sticky="NESW")
 
         self.root.mainloop()
 
-    def entry_getter(self):
+    def entry_getter(self, *args):
         global saved_users
         users_username = self.username_entry.get()
         users_password = self.password_entry.get()
@@ -117,18 +118,19 @@ class Window:
                 entry.delete(0, END)
                 entry.configure(show="*")
     
-    def entry_window(self, user_username):
+    def entry_window(self, entry_user_username):
+        # Entry window screen 
 
         # Changed Window sizing to fit new grid
-        self.root.columnconfigure((0,2,4,6,8), weight= 2)
+        self.root.columnconfigure((0,2,4,6), weight= 2)
         self.root.columnconfigure((1,3,5), weight = 4)
-        self.root.rowconfigure((0,2,4,6,8), weight = 1)
+        self.root.rowconfigure((0,2,4,6), weight = 1)
         self.root.rowconfigure((1,3,5), weight = 4)
 
         # Label welcoming user
-        self.entry_welcome_text = f"Welcome {user_username}, please select an option."
+        self.entry_welcome_text = f"Welcome {entry_user_username}, please select an option."
         self.entry_welcome_label = Label(self.root, text=self.entry_welcome_text, font=(self.COMMON_FONT))
-        self.entry_welcome_label.grid(column=1, row=0, columnspan= 6, sticky="NESW")
+        self.entry_welcome_label.grid(column=1, row=0, columnspan= 5, sticky="NESW")
 
         # FRAME 1 for Entry window
         self.login_edit_frame = Frame(self.root, borderwidth=2, relief=SOLID)
@@ -138,7 +140,7 @@ class Window:
 
         # Button 1 Profile edit for Entry window in FRAME 1
         self.login_edit_button_text = "Edit Login"
-        self.login_edit_button = Button(self.login_edit_frame, text=self.login_edit_button_text, anchor="n")
+        self.login_edit_button = Button(self.login_edit_frame, text=self.login_edit_button_text, anchor="n", command= lambda: self.login_edit_window())
         self.login_edit_button.grid(column=0, row=0, sticky="NESW")
 
         # FRAME 2 for Entry window
@@ -149,5 +151,57 @@ class Window:
 
         # Button 2 Profile enter for entry window in  FRAME 2
         self.profile_enter_button_text = "Select Profile"
-        self.profile_enter_button = Button(self.profile_enter_frame, text=self.profile_enter_button_text, anchor="n")
+        self.profile_enter_button = Button(self.profile_enter_frame, text=self.profile_enter_button_text, anchor="n", command= lambda: self.profile_entry_window(entry_user_username))
         self.profile_enter_button.grid(column=0, row=0, sticky="NESW")
+
+    def login_edit_window(self, *args):
+        # This window will allow the user to edit their login information
+
+        self.entry_welcome_label.destroy()
+        self.login_edit_frame.destroy()
+        self.profile_enter_frame.destroy()
+        
+    def profile_entry_window(self, profile_user_username):
+        # This window will allow the user to create groupings for tasks
+
+        global saved_users
+
+        # Destroying old widgets
+        self.entry_welcome_label.destroy()
+        self.login_edit_frame.destroy()
+        self.profile_enter_frame.destroy()
+
+        # Setting root column and row configs 
+        self.root.columnconfigure((0,2,4,6), weight= 2)
+        self.root.columnconfigure((1,3,5), weight = 4)
+        self.root.rowconfigure((0,2,4,6), weight = 1)
+        self.root.rowconfigure((1,3,5), weight = 4)
+
+        self.profile_entry_welcome_text = f"Welcome {profile_user_username}, please select a profile."
+        self.profile_entry_entry_welcome_label = Label(self.root, text=self.profile_entry_welcome_text, font=(self.COMMON_FONT))
+        self.profile_entry_entry_welcome_label.grid(column=1, row=0, columnspan= 5, sticky="NESW")
+
+        profile_list = []
+        for keys in saved_users[profile_user_username]["profiles"]:
+            # Grabs ditctionary containing profiles
+            profile_list.append(keys)
+            # Grabs profile dictionary 
+            # print(saved_users[profile_user_username]["profiles"][keys])
+
+
+        for i in range(len(profile_list)):
+            column = (i%3)*2+1
+            row = math.floor(i/3)*2+1
+            # Creating frame for each profile for profile entry window
+            self.template_profile_frame = Frame(self.root, borderwidth=2, relief=SOLID)
+            self.template_profile_frame.grid(column=column, row=row, sticky="NESW")
+            self.template_profile_frame.columnconfigure((0), weight= 1)
+            self.template_profile_frame.rowconfigure((0), weight = 1)
+            # Button 1 Profile for profile entry in FRAME 1
+            self.template_profile_frame_text = profile_list[i]
+            self.template_profile_button = Button(self.template_profile_frame, text=self.template_profile_frame_text, anchor="n", command= self.destoryer)
+            self.template_profile_button.grid(column=0, row=0, sticky="NESW")
+
+    def destoryer(self):
+    
+        self.template_profile_frame.destroy()
