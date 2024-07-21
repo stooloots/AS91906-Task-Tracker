@@ -188,20 +188,34 @@ class Window:
             # Grabs profile dictionary 
             # print(saved_users[profile_user_username]["profiles"][keys])
 
-
+        # Creating list of profile frames
+        self.template_profile_frame = []
         for i in range(len(profile_list)):
+            # Maths😜
             column = (i%3)*2+1
             row = math.floor(i/3)*2+1
-            # Creating frame for each profile for profile entry window
-            self.template_profile_frame = Frame(self.root, borderwidth=2, relief=SOLID)
-            self.template_profile_frame.grid(column=column, row=row, sticky="NESW")
-            self.template_profile_frame.columnconfigure((0), weight= 1)
-            self.template_profile_frame.rowconfigure((0), weight = 1)
-            # Button 1 Profile for profile entry in FRAME 1
+            # Creating frame for each profile inside the profile entry window and appending it to the frame list
+            self.template_profile_frame.append(Frame(self.root, borderwidth=2, relief=SOLID))
+            self.template_profile_frame[-1].grid(column=column, row=row, sticky="NESW")
+            self.template_profile_frame[-1].columnconfigure((0), weight= 1)
+            self.template_profile_frame[-1].rowconfigure((0), weight = 1)
+            # Button place in frame (created for profile) located inside profile entry window
             self.template_profile_frame_text = profile_list[i]
-            self.template_profile_button = Button(self.template_profile_frame, text=self.template_profile_frame_text, anchor="n", command= self.destoryer)
+            self.template_profile_button = Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command= self.task_window)
             self.template_profile_button.grid(column=0, row=0, sticky="NESW")
 
-    def destoryer(self):
-    
-        self.template_profile_frame.destroy()
+    def task_window(self):
+
+        global saved_users
+
+        # Runs through list of profile frames and deletes them
+        for i in self.template_profile_frame:
+            i.destroy()
+        self.profile_entry_entry_welcome_label.destroy()
+
+        # Setting root column and row configs for task window
+        self.root.columnconfigure((0,4), weight= 1)
+        self.root.columnconfigure((1,3), weight = 4)
+        self.root.columnconfigure((2), weight=6)
+        self.root.rowconfigure((0), weight = 1)
+        self.root.rowconfigure((1), weight = 9)
