@@ -187,6 +187,7 @@ class Window:
             profile_list.append(keys)
             # Grabs profile dictionary 
             # print(saved_users[profile_user_username]["profiles"][keys])
+            
 
         # Creating list of profile frames
         self.template_profile_frame = []
@@ -201,12 +202,11 @@ class Window:
             self.template_profile_frame[-1].rowconfigure((0), weight = 1)
             # Button place in frame (created for profile) located inside profile entry window
             self.template_profile_frame_text = profile_list[i]
-            self.template_profile_button = Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command= self.task_window)
+            self.template_profile_button = Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command= lambda: self.task_window(saved_users[profile_user_username]["profiles"][profile_list[i]])) 
             self.template_profile_button.grid(column=0, row=0, sticky="NESW")
 
-    def task_window(self):
-
-        global saved_users
+    def task_window(self, profile_tasks):
+        ''' This method will open the task window where all tasks are visible, profile_tasks is the tasks dictionary taken from the profile '''
 
         # Runs through list of profile frames and deletes them
         for i in self.template_profile_frame:
@@ -219,3 +219,5 @@ class Window:
         self.root.columnconfigure((2), weight=6)
         self.root.rowconfigure((0), weight = 1)
         self.root.rowconfigure((1), weight = 9)
+
+        
