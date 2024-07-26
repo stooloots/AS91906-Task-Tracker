@@ -5,6 +5,7 @@
 
 from tkinter import *
 from tkinter import messagebox
+from functools import partial
 import json
 import math
 
@@ -202,7 +203,8 @@ class Window:
             self.template_profile_frame[-1].rowconfigure((0), weight = 1)
             # Button place in frame (created for profile) located inside profile entry window
             self.template_profile_frame_text = profile_list[i]
-            self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command= lambda: self.task_window(saved_users[profile_user_username]["profiles"][profile_list[i]]))) 
+            print(saved_users[profile_user_username]["profiles"][profile_list[i]])
+            self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, saved_users[profile_user_username]["profiles"][profile_list[i]]))) # Fixed by Jensen
             self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
 
     def task_window(self, profile_tasks):
@@ -239,7 +241,7 @@ class Window:
         self.task_window_frame1.rowconfigure((1,3,5,7,9), weight = 2)
 
         # Title label
-        self.task_window_title = Label(self.task_window_frame1, text="Profile 1")
+        self.task_window_title = Label(self.task_window_frame1, text="Profile")
         self.task_window_title.grid(column=1, row=0, sticky="NESW")
         
         self.template_task_frame = []
