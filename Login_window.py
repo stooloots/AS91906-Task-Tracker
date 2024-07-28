@@ -203,7 +203,6 @@ class Window:
             self.template_profile_frame[-1].rowconfigure((0), weight = 1)
             # Button place in frame (created for profile) located inside profile entry window
             self.template_profile_frame_text = profile_list[i]
-            print(saved_users[profile_user_username]["profiles"][profile_list[i]])
             self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, saved_users[profile_user_username]["profiles"][profile_list[i]]))) # Fixed by Jensen
             self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
 
@@ -219,7 +218,9 @@ class Window:
         self.root.columnconfigure((0,4), weight= 1)
         self.root.columnconfigure((1,3), weight = 4)
         self.root.columnconfigure((2), weight=12)
+        self.root.columnconfigure((5,6,7,8,9),weight=0)
         self.root.rowconfigure((0), weight = 1)
+        self.root.rowconfigure((1,2,3,4,5,6,7,8), weight = 0)
 
         # Frame 1 for left side of task window. This frame will include the title and the listed tasks section
         self.task_window_frame1 = Frame(self.root)
@@ -229,16 +230,14 @@ class Window:
         task_list = []
         for task in profile_tasks:
             task_list.append(task)
-        print(profile_tasks)
-        print(task_list)
+        # print(profile_tasks) value assigned to the profile 
+        # print(task_list) keys for each value within the profiles dictionary
 
-        # Setting task_window_frame1 columns and rows
+        # Setting task_window_frame1 columns, rows will be set when each task is set
         self.task_window_frame1.columnconfigure((1), weight= 4)
         self.task_window_frame1.columnconfigure((0,2), weight = 1)
-        # Optimise for the amount of tasks
-        # check len of task_list then add aditional rows according to the amount of tasks
-        self.task_window_frame1.rowconfigure((0,2,4,6,8,10), weight = 1)
-        self.task_window_frame1.rowconfigure((1,3,5,7,9), weight = 2)
+        # Setting task_window_fram1 bottom row
+        self.task_window_frame1.rowconfigure((len(task_list*2)), weight=1) 
 
         # Title label
         self.task_window_title = Label(self.task_window_frame1, text="Profile")
@@ -246,31 +245,35 @@ class Window:
         
         self.template_task_frame = []
         for i in range(len(task_list)):
+            # Setting task_window_frame1 row configurations
+            self.task_window_frame1.rowconfigure(((i*2)), weight = 1)
+            self.task_window_frame1.rowconfigure(((i*2)+1), weight = 2)
+
             # Creating frames for each task label
             self.template_task_frame.append(Frame(self.task_window_frame1, borderwidth=2, relief=SOLID))
-            self.template_task_frame[-1].grid(column=1, row=i+1, sticky="NESW")
+            self.template_task_frame[-1].grid(column=1, row=((i*2)+1), sticky="NESW")
             self.template_task_frame[-1].columnconfigure((0), weight= 1)
             self.template_task_frame[-1].rowconfigure((0), weight = 1)
             # Button placed in task frame (created for tasks) located inside profile entry window
             self.template_task_frame_text = task_list[i]
-            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= self.tasking) 
+            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= lambda: self.tasking(task_list[i], profile_tasks[task_list[i]])) 
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
         
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
-        self.task_window_frame2 = Frame(self.root, bg="#880808")
+        self.task_window_frame2 = Frame(self.root)
         self.task_window_frame2.grid(column=3, row=0, sticky="NESW")
         
         # Setting task_window_frame2 columns and rows
         self.task_window_frame2.columnconfigure((0), weight= 1)
         # Layout of rows
-        self.task_window_frame2.rowconfigure((0,2,4), weight = 2)
-        self.task_window_frame2.rowconfigure((1,3), weight = 1)
-        self.task_window_frame2.rowconfigure((5), weight=4)
+        self.task_window_frame2.rowconfigure((1,3,5), weight = 2)
+        self.task_window_frame2.rowconfigure((0,2,4), weight = 1)
+        self.task_window_frame2.rowconfigure((6), weight=4)
 
         # Recently edited frame and label
         # Recent edit frame
-        self.recent_edit_frame = Frame(self.task_window_frame2)
-        self.recent_edit_frame.grid(column=0, row=0, sticky="NESW")
+        self.recent_edit_frame = Frame(self.task_window_frame2, borderwidth=2, relief=SOLID)
+        self.recent_edit_frame.grid(column=0, row=1, sticky="NESW")
 
         # Setting recent_edit_frame columns and rows
         self.recent_edit_frame.columnconfigure((0,2), weight= 1)
@@ -278,25 +281,40 @@ class Window:
         # Layout of rows
         self.recent_edit_frame.rowconfigure((1,3), weight = 2)
         self.recent_edit_frame.rowconfigure((0,4), weight = 1)
-        self.recent_edit_frame.rowconfigure((2), weight=4)
+        self.recent_edit_frame.rowconfigure((2), weight=3)
 
         # Recent edit label
-        recent_edit_task = "task1"
+        self.recent_edit_task = "task1"
         self.recent_edit_label_text = f"Recently\n edited:"
         self.recent_edit_label_1 = Label(self.recent_edit_frame, text=self.recent_edit_label_text)
         self.recent_edit_label_1.grid(column=1, row=1, sticky="NESW")
 
-        self.recent_edit_label_task = recent_edit_task
+        self.recent_edit_label_task = self.recent_edit_task
         self.recent_edit_label_2 = Label(self.recent_edit_frame, text=self.recent_edit_label_task)
         self.recent_edit_label_2.grid(column=1, row=3, sticky="NESW")
 
         # Priority button
-        self.priority_button_frame = Frame(self.task_window_frame2)
-        self.priority_button_frame.grid(column=0, row=2, sticky="NESW")
+        self.priority_button_frame = Frame(self.task_window_frame2, borderwidth=2, relief=SOLID)
+        self.priority_button_frame.grid(column=0, row=3, sticky="NESW")
+        self.priority_button_frame.columnconfigure((0), weight=1)
+        self.priority_button_frame.rowconfigure((0), weight=1)
+
+        self.profile_button_text = "Change Priority"
+        self.profile_button = Button(self.priority_button_frame, text=self.profile_button_text)
+        self.profile_button.grid(column=0, row=0, sticky="NESW")
+
+        # Task Edit button (previously delete button)
+        self.task_edit_button_frame = Frame(self.task_window_frame2, borderwidth=2, relief=SOLID)
+        self.task_edit_button_frame.grid(column=0, row=5, sticky="NESW")
+        self.task_edit_button_frame.columnconfigure((0), weight=1)
+        self.task_edit_button_frame.rowconfigure((0), weight=1)
+
+        self.task_edit_button_text = "Edit Task"
+        self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text)
+        self.task_edit_button.grid(column=0, row=0, sticky="NESW")
         
+    def tasking(self, task_name, task_info):
 
-
-    def tasking(self):
-
-        self.task_window_frame1.destroy()
-        self.task_window_frame2.destroy()
+        self.recent_edit_label_2.configure(text=task_name)
+        self.test_toplevel = Toplevel(self.root)
+        print(task_info)
