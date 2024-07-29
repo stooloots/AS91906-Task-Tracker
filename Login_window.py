@@ -256,7 +256,7 @@ class Window:
             self.template_task_frame[-1].rowconfigure((0), weight = 1)
             # Button placed in task frame (created for tasks) located inside profile entry window
             self.template_task_frame_text = task_list[i]
-            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= lambda: self.tasking(task_list[i], profile_tasks[task_list[i]])) 
+            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i], profile_tasks[task_list[i]]))
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
         
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
@@ -284,7 +284,7 @@ class Window:
         self.recent_edit_frame.rowconfigure((2), weight=3)
 
         # Recent edit label
-        self.recent_edit_task = "task1"
+        self.recent_edit_task = "None"
         self.recent_edit_label_text = f"Recently\n edited:"
         self.recent_edit_label_1 = Label(self.recent_edit_frame, text=self.recent_edit_label_text)
         self.recent_edit_label_1.grid(column=1, row=1, sticky="NESW")
@@ -309,12 +309,39 @@ class Window:
         self.task_edit_button_frame.columnconfigure((0), weight=1)
         self.task_edit_button_frame.rowconfigure((0), weight=1)
 
-        self.task_edit_button_text = "Edit Task"
+        self.task_edit_button_text = "Delete Task"
         self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text)
         self.task_edit_button.grid(column=0, row=0, sticky="NESW")
         
     def tasking(self, task_name, task_info):
+        ''' Opens task windows'''
 
+        # Changes recent edit label
         self.recent_edit_label_2.configure(text=task_name)
-        self.test_toplevel = Toplevel(self.root)
-        print(task_info)
+
+        # Opens Toplevel window that will be each task
+        self.task_toplevel = Toplevel(self.root)
+        self.task_toplevel.title(task_name.title())
+        self.task_toplevel.geometry("250x150")
+
+        # Weights for columns and rows
+        self.task_toplevel.columnconfigure((0,1), weight=2)
+        self.task_toplevel.columnconfigure((2), weight=2)
+        self.task_toplevel.rowconfigure((0,1), weight=2)
+        self.task_toplevel.rowconfigure((2), weight=2)
+
+        # Label for text within the task
+        self.task_toplevel_label_text = "• " + task_info
+        self.task_toplevel_label = Label(self.task_toplevel, text=self.task_toplevel_label_text, font=self.COMMON_FONT)
+        self.task_toplevel_label.grid(column=0, row=0, sticky="NESW")
+
+        # Edit button 
+        # Edit button Frame
+        self.task_toplevel_edit_frame = Frame(self.task_toplevel)
+        self.task_toplevel_edit_frame.grid(column=2, row=2, sticky="SE")
+        # Edit button button
+        self.task_toplevel_edit_frame.columnconfigure((0), weight=1)
+        self.task_toplevel_edit_frame.rowconfigure((0), weight=1)
+        self.task_toplevel_edit_button_image = PhotoImage(file= "edit_icon_photoimage.png")
+        self.task_toplevel_edit_button = Button(self.task_toplevel_edit_frame, image=self.task_toplevel_edit_button_image)  
+        self.task_toplevel_edit_button.grid(column=0, row=0, sticky="NESW")
