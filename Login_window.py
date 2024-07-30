@@ -330,18 +330,85 @@ class Window:
         self.task_toplevel.rowconfigure((0,1), weight=2)
         self.task_toplevel.rowconfigure((2), weight=2)
 
+        # Label for bullet points (I might allow the user to change to - or other symbols if they wish to do so)
+        self.task_toplevel_bulletpoint_symbol = "•" + " "
+        self.task_toplevel_bulletpoint = Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT)
+        self.task_toplevel_bulletpoint.grid(column=0, row=0, sticky="E")
+
         # Label for text within the task
-        self.task_toplevel_label_text = "• " + task_info
+        self.task_toplevel_label_text = task_info
         self.task_toplevel_label = Label(self.task_toplevel, text=self.task_toplevel_label_text, font=self.COMMON_FONT)
-        self.task_toplevel_label.grid(column=0, row=0, sticky="NESW")
+        self.task_toplevel_label.grid(column=1, row=0, sticky="NESW")
 
         # Edit button 
         # Edit button Frame
         self.task_toplevel_edit_frame = Frame(self.task_toplevel)
-        self.task_toplevel_edit_frame.grid(column=2, row=2, sticky="SE")
+        self.task_toplevel_edit_frame.grid(column=2, row=2, sticky="ESW")
         # Edit button button
         self.task_toplevel_edit_frame.columnconfigure((0), weight=1)
         self.task_toplevel_edit_frame.rowconfigure((0), weight=1)
         self.task_toplevel_edit_button_image = PhotoImage(file= "edit_icon_photoimage.png")
-        self.task_toplevel_edit_button = Button(self.task_toplevel_edit_frame, image=self.task_toplevel_edit_button_image)  
+        self.task_toplevel_edit_button = Button(self.task_toplevel_edit_frame, image=self.task_toplevel_edit_button_image, command= lambda: self.tasking_edit(task_name, task_info))  
         self.task_toplevel_edit_button.grid(column=0, row=0, sticky="NESW")
+
+    def tasking_edit(self, task_name, task_info):
+        ''' Allows the user to edit their task'''
+
+        # Deletes old task text
+        self.task_toplevel_label.destroy()
+
+        # Change geometry
+        self.task_toplevel.geometry("350x150")
+
+        # Entry for user to enter new task in
+        self.task_toplevel_entry = Entry(self.task_toplevel, font=self.COMMON_FONT)
+        self.task_toplevel_entry.grid(column=1, row=0, sticky="NESW")
+        self.task_toplevel_entry.insert(0, self.task_toplevel_label_text)
+
+        # Submit changes button frame
+        self.task_toplevel_submit_button_frame = Frame(self.task_toplevel)
+        self.task_toplevel_submit_button_frame.grid(column=1, row=2, sticky="ESW")
+        self.task_toplevel_submit_button_frame.columnconfigure((0,1), weight=1)
+        self.task_toplevel_submit_button_frame.rowconfigure((0), weight=1)
+        
+        # Submit changes button
+        self.task_toplevel_submit_button_text = "Submit"
+        self.task_toplevel_submit_button = Button(self.task_toplevel_submit_button_frame, text=self.task_toplevel_submit_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_submit_button.grid(column=0, row=0, sticky="NESW")
+
+        # Cancel changes button
+        self.task_toplevel_cancel_button_text = "Cancel"
+        self.task_toplevel_cancel_button = Button(self.task_toplevel_submit_button_frame, text=self.task_toplevel_cancel_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_cancel_button.grid(column=1, row=0, sticky="NESW")
+
+        # Add bullet point button
+        # Frame
+        self.task_toplevel_addpoint_frame = Frame(self.task_toplevel)
+        self.task_toplevel_addpoint_frame.grid(column=2, row=0, sticky="NESW")
+        self.task_toplevel_addpoint_frame.columnconfigure((0), weight=1)
+        self.task_toplevel_addpoint_frame.rowconfigure((0,1), weight=1)
+
+        # Button
+        self.task_toplevel_addpoint_button_text = "+" + "•"
+        self.task_toplevel_addpoint_button = Button(self.task_toplevel_addpoint_frame, text=self.task_toplevel_addpoint_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_addpoint_button.grid(column=0, row=0, sticky="NESW")
+
+        # Entry
+        self.task_toplevel_addpoint_entry = Entry(self.task_toplevel_addpoint_frame)
+        self.task_toplevel_addpoint_entry.grid(column=0, row=1, sticky="NESW")
+
+        # Delete bullet point button(s)
+        # Frame
+        self.task_toplevel_delpoint_frame = Frame(self.task_toplevel)
+        self.task_toplevel_delpoint_frame.grid(column=2, row=1, sticky="NESW")
+        self.task_toplevel_delpoint_frame.columnconfigure((0), weight=1)
+        self.task_toplevel_delpoint_frame.rowconfigure((0,1), weight=1)
+
+        # Button
+        self.task_toplevel_delpoint_button_text = "-" + "•"
+        self.task_toplevel_delpoint_button = Button(self.task_toplevel_delpoint_frame, text=self.task_toplevel_delpoint_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_delpoint_button.grid(column=0, row=0, sticky="NESW")
+
+        # Spinbox
+        self.task_toplevel_delpoint_spinbox = Spinbox(self.task_toplevel_delpoint_frame)
+        self.task_toplevel_delpoint_spinbox.grid(column=0, row=1, sticky="NESW")
