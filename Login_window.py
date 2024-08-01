@@ -5,6 +5,7 @@
 
 from tkinter import *
 from tkinter import messagebox
+from tkinter import ttk
 from functools import partial
 import json
 import math
@@ -226,7 +227,7 @@ class Window:
         self.task_window_frame1 = Frame(self.root)
         self.task_window_frame1.grid(column=1, row=0, sticky="NESW")
         
-        # Getting list of tasks
+        # Getting list of tasks (keys)
         task_list = []
         for task in profile_tasks:
             task_list.append(task)
@@ -256,7 +257,7 @@ class Window:
             self.template_task_frame[-1].rowconfigure((0), weight = 1)
             # Button placed in task frame (created for tasks) located inside profile entry window
             self.template_task_frame_text = task_list[i]
-            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i], profile_tasks[task_list[i]]))
+            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i], profile_tasks[task_list[i]]))# task_lsit[i] sends task name, profile_tasks[task_list[i]] sends the list of tasks
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
         
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
@@ -324,26 +325,33 @@ class Window:
         self.task_toplevel.title(task_name.title())
         self.task_toplevel.geometry("250x150")
 
+        # Additional rows required for additional poins
+        self.addtional_rows = len(task_info)
+
         # Weights for columns and rows
-        self.task_toplevel.columnconfigure((0,1), weight=2)
-        self.task_toplevel.columnconfigure((2), weight=2)
-        self.task_toplevel.rowconfigure((0,1), weight=2)
-        self.task_toplevel.rowconfigure((2), weight=2)
+        self.task_toplevel.columnconfigure((1), weight=2)
+        self.task_toplevel.columnconfigure((2+self.addtional_rows), weight=2)
+        self.task_toplevel.rowconfigure((3+self.addtional_rows, 2+self.addtional_rows), weight=2)
 
-        # Label for bullet points (I might allow the user to change to - or other symbols if they wish to do so)
-        self.task_toplevel_bulletpoint_symbol = "•" + " "
-        self.task_toplevel_bulletpoint = Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT)
-        self.task_toplevel_bulletpoint.grid(column=0, row=0, sticky="E")
+        # Creating a line for each task in the task_info list
+        self.task_toplevel_label = []
+        self.task_toplevel_bulletpoint = []
+        for i in range(len(task_info)):
+            self.task_toplevel.rowconfigure((i), weight=2)
+            # Label for bullet points (I might allow the user to change to - or a check box / other symbols if they wish to do so)
+            self.task_toplevel_bulletpoint_symbol = "•" + " "
+            self.task_toplevel_bulletpoint.append(Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT))
+            self.task_toplevel_bulletpoint[-1].grid(column=0, row=0+i, sticky="E")
 
-        # Label for text within the task
-        self.task_toplevel_label_text = task_info
-        self.task_toplevel_label = Label(self.task_toplevel, text=self.task_toplevel_label_text, font=self.COMMON_FONT)
-        self.task_toplevel_label.grid(column=1, row=0, sticky="NESW")
+            # Label for text within the task
+            self.task_toplevel_label_text = task_info[i]
+            self.task_toplevel_label.append(Label(self.task_toplevel, text=self.task_toplevel_label_text, font=self.COMMON_FONT))
+            self.task_toplevel_label[-1].grid(column=1, row=0+i, sticky="W")
 
         # Edit button 
         # Edit button Frame
         self.task_toplevel_edit_frame = Frame(self.task_toplevel)
-        self.task_toplevel_edit_frame.grid(column=2, row=2, sticky="ESW")
+        self.task_toplevel_edit_frame.grid(column=2+self.addtional_rows, row=3+self.addtional_rows, sticky="NESW")
         # Edit button button
         self.task_toplevel_edit_frame.columnconfigure((0), weight=1)
         self.task_toplevel_edit_frame.rowconfigure((0), weight=1)
@@ -355,19 +363,30 @@ class Window:
         ''' Allows the user to edit their task'''
 
         # Deletes old task text
-        self.task_toplevel_label.destroy()
+        for i in range(len(self.task_toplevel_label)):
+            self.task_toplevel_label[i].destroy()
+
+        # Additional rows required
+        self.addtional_rows = len(task_info)
 
         # Change geometry
-        self.task_toplevel.geometry("350x150")
+        geometry = "450x" + str(150+(self.addtional_rows*50))
+        self.task_toplevel.geometry(geometry)
 
-        # Entry for user to enter new task in
-        self.task_toplevel_entry = Entry(self.task_toplevel, font=self.COMMON_FONT)
-        self.task_toplevel_entry.grid(column=1, row=0, sticky="NESW")
-        self.task_toplevel_entry.insert(0, self.task_toplevel_label_text)
+        # Going through the list of points in the task and creating and entry for each of them. 
+        self.task_toplevel_entry = []
+        for i in range(len(task_info)):
+            # Entry for user to enter new task in
+            self.task_toplevel_entry.append(Entry(self.task_toplevel, font=self.COMMON_FONT))
+            self.task_toplevel_entry[-1].grid(column=1, row=0+i, sticky="NESW")
+
+            # Inserting the old text
+            self.task_toplevel_label_text = task_info[i]
+            self.task_toplevel_entry[-1].insert(0, self.task_toplevel_label_text)
 
         # Submit changes button frame
         self.task_toplevel_submit_button_frame = Frame(self.task_toplevel)
-        self.task_toplevel_submit_button_frame.grid(column=1, row=2, sticky="ESW")
+        self.task_toplevel_submit_button_frame.grid(column=1, row=3+self.addtional_rows, sticky="NESW")
         self.task_toplevel_submit_button_frame.columnconfigure((0,1), weight=1)
         self.task_toplevel_submit_button_frame.rowconfigure((0), weight=1)
         
@@ -384,7 +403,7 @@ class Window:
         # Add bullet point button
         # Frame
         self.task_toplevel_addpoint_frame = Frame(self.task_toplevel)
-        self.task_toplevel_addpoint_frame.grid(column=2, row=0, sticky="NESW")
+        self.task_toplevel_addpoint_frame.grid(column=2+self.addtional_rows, row=0, sticky="NESW")
         self.task_toplevel_addpoint_frame.columnconfigure((0), weight=1)
         self.task_toplevel_addpoint_frame.rowconfigure((0,1), weight=1)
 
@@ -400,7 +419,7 @@ class Window:
         # Delete bullet point button(s)
         # Frame
         self.task_toplevel_delpoint_frame = Frame(self.task_toplevel)
-        self.task_toplevel_delpoint_frame.grid(column=2, row=1, sticky="NESW")
+        self.task_toplevel_delpoint_frame.grid(column=2+self.addtional_rows, row=1, sticky="NESW")
         self.task_toplevel_delpoint_frame.columnconfigure((0), weight=1)
         self.task_toplevel_delpoint_frame.rowconfigure((0,1), weight=1)
 
@@ -409,6 +428,6 @@ class Window:
         self.task_toplevel_delpoint_button = Button(self.task_toplevel_delpoint_frame, text=self.task_toplevel_delpoint_button_text, font=self.COMMON_FONT)
         self.task_toplevel_delpoint_button.grid(column=0, row=0, sticky="NESW")
 
-        # Spinbox
-        self.task_toplevel_delpoint_spinbox = Spinbox(self.task_toplevel_delpoint_frame)
-        self.task_toplevel_delpoint_spinbox.grid(column=0, row=1, sticky="NESW")
+        # Combobox
+        self.task_toplevel_delpoint_combobox = ttk.Combobox(self.task_toplevel_delpoint_frame)
+        self.task_toplevel_delpoint_combobox.grid(column=0, row=1, sticky="NESW")
