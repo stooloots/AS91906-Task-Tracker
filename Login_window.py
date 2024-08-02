@@ -429,5 +429,9 @@ class Window:
         self.task_toplevel_delpoint_button.grid(column=0, row=0, sticky="NESW")
 
         # Combobox
-        self.task_toplevel_delpoint_combobox = ttk.Combobox(self.task_toplevel_delpoint_frame)
+        self.task_toplevel_delpoint_combobox = ttk.Combobox(self.task_toplevel_delpoint_frame, state="readonly")
+        task_toplevel_delpoint_combobox_values = []
+        for i in range(len(task_info)):
+            task_toplevel_delpoint_combobox_values.append(1+i)
+        self.task_toplevel_delpoint_combobox['values'] = task_toplevel_delpoint_combobox_values
         self.task_toplevel_delpoint_combobox.grid(column=0, row=1, sticky="NESW")
