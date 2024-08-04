@@ -168,6 +168,8 @@ class Window:
 
         global saved_users
 
+        # Adding profile_user_username into the program
+
         # Destroying old widgets
         self.entry_welcome_label.destroy()
         self.login_edit_frame.destroy()
@@ -204,11 +206,15 @@ class Window:
             self.template_profile_frame[-1].rowconfigure((0), weight = 1)
             # Button place in frame (created for profile) located inside profile entry window
             self.template_profile_frame_text = profile_list[i]
-            self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, saved_users[profile_user_username]["profiles"][profile_list[i]]))) # Fixed by Jensen
+            self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, profile_list[i]))) # Fixed by Jensen # Now sends "profile_list[i] instead of task dictionary"
             self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
 
     def task_window(self, profile_tasks):
         ''' This method will open the task window where all tasks are visible, profile_tasks is the tasks dictionary taken from the profile '''
+        # profile tasks is a name
+        # eg "profile 1", "profile 2"
+
+        global saved_users
 
         # Runs through list of profile frames and deletes them
         for i in self.template_profile_frame:
@@ -425,7 +431,7 @@ class Window:
 
         # Button
         self.task_toplevel_delpoint_button_text = "-" + "•"
-        self.task_toplevel_delpoint_button = Button(self.task_toplevel_delpoint_frame, text=self.task_toplevel_delpoint_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_delpoint_button = Button(self.task_toplevel_delpoint_frame, text=self.task_toplevel_delpoint_button_text, font=self.COMMON_FONT, command= lambda: self.remove_point(task_info))
         self.task_toplevel_delpoint_button.grid(column=0, row=0, sticky="NESW")
 
         # Combobox
@@ -435,3 +441,17 @@ class Window:
             task_toplevel_delpoint_combobox_values.append(1+i)
         self.task_toplevel_delpoint_combobox['values'] = task_toplevel_delpoint_combobox_values
         self.task_toplevel_delpoint_combobox.grid(column=0, row=1, sticky="NESW")
+    
+    def remove_point(self, task_info):
+        ''' Removes points from task '''
+        global saved_users
+
+        point = self.task_toplevel_delpoint_combobox.get()
+        if point == "":
+            messagebox.showerror("Error", "Invalid input: Please enter a value in the combobox", parent=self.task_toplevel)
+        else:
+            for key, value in saved_users[self.global_profile_user_username]["profiles"].items():
+                print(task_info)
+            #print(saved_users[self.global_profile_user_username]["profiles"])
+            #with open("database.json", "w") as f:
+            #    json.dump(saved_users, f,indent=2)
