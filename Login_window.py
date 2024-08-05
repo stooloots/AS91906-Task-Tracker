@@ -123,6 +123,9 @@ class Window:
     def entry_window(self, entry_user_username):
         # Entry window screen 
 
+        # Adding the users username to the class
+        self.profile_user_username = entry_user_username
+
         # Changed Window sizing to fit new grid
         self.root.columnconfigure((0,2,4,6), weight= 2)
         self.root.columnconfigure((1,3,5), weight = 4)
@@ -153,7 +156,7 @@ class Window:
 
         # Button 2 Profile enter for entry window in  FRAME 2
         self.profile_enter_button_text = "Select Profile"
-        self.profile_enter_button = Button(self.profile_enter_frame, text=self.profile_enter_button_text, anchor="n", command= lambda: self.profile_entry_window(entry_user_username))
+        self.profile_enter_button = Button(self.profile_enter_frame, text=self.profile_enter_button_text, anchor="n", command= lambda: self.profile_entry_window())
         self.profile_enter_button.grid(column=0, row=0, sticky="NESW")
 
     def login_edit_window(self, *args):
@@ -163,12 +166,10 @@ class Window:
         self.login_edit_frame.destroy()
         self.profile_enter_frame.destroy()
         
-    def profile_entry_window(self, profile_user_username):
+    def profile_entry_window(self):
         # This window will allow the user to create groupings for tasks
 
         global saved_users
-
-        # Adding profile_user_username into the program
 
         # Destroying old widgets
         self.entry_welcome_label.destroy()
@@ -181,16 +182,16 @@ class Window:
         self.root.rowconfigure((0,2,4,6), weight = 1)
         self.root.rowconfigure((1,3,5), weight = 4)
 
-        self.profile_entry_welcome_text = f"Welcome {profile_user_username}, please select a profile."
+        self.profile_entry_welcome_text = f"Welcome {self.profile_user_username}, please select a profile."
         self.profile_entry_entry_welcome_label = Label(self.root, text=self.profile_entry_welcome_text, font=(self.COMMON_FONT))
         self.profile_entry_entry_welcome_label.grid(column=1, row=0, columnspan= 5, sticky="NESW")
 
         profile_list = []
-        for keys in saved_users[profile_user_username]["profiles"]:
+        for keys in saved_users[self.profile_user_username]["profiles"]:
             # Grabs ditctionary containing profiles
             profile_list.append(keys)
             # Grabs profile dictionary 
-            # print(saved_users[profile_user_username]["profiles"][keys])
+            # print(saved_users[self.profile_user_username]["profiles"][keys])
 
         # Creating list of profile frames and buttons
         self.template_profile_frame = []
@@ -216,6 +217,9 @@ class Window:
 
         global saved_users
 
+        # Adds the profile_task selected into the class
+        self.profile_number = profile_tasks
+
         # Runs through list of profile frames and deletes them
         for i in self.template_profile_frame:
             i.destroy()
@@ -235,11 +239,12 @@ class Window:
         
         # Getting list of tasks (keys)
         task_list = []
-        for task in profile_tasks:
+        for task in saved_users[self.profile_user_username]["profiles"][self.profile_number]:
             task_list.append(task)
-        # print(profile_tasks) value assigned to the profile 
+        print(task_list)
+        # print(self.profile_number) value assigned to the profile 
         # print(task_list) keys for each value within the profiles dictionary
-
+        
         # Setting task_window_frame1 columns, rows will be set when each task is set
         self.task_window_frame1.columnconfigure((1), weight= 4)
         self.task_window_frame1.columnconfigure((0,2), weight = 1)
@@ -263,7 +268,7 @@ class Window:
             self.template_task_frame[-1].rowconfigure((0), weight = 1)
             # Button placed in task frame (created for tasks) located inside profile entry window
             self.template_task_frame_text = task_list[i]
-            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i], profile_tasks[task_list[i]]))# task_lsit[i] sends task name, profile_tasks[task_list[i]] sends the list of tasks
+            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i]))# task_list[i] sends task name
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
         
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
@@ -320,9 +325,15 @@ class Window:
         self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text)
         self.task_edit_button.grid(column=0, row=0, sticky="NESW")
         
-    def tasking(self, task_name, task_info):
+    def tasking(self, task_name):
         ''' Opens task windows'''
 
+        # Getting the saved_users database
+        global saved_users
+
+        # Getting the task_info
+        self.task_info = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]
+        
         # Changes recent edit label
         self.recent_edit_label_2.configure(text=task_name)
 
@@ -332,7 +343,7 @@ class Window:
         self.task_toplevel.geometry("250x150")
 
         # Additional rows required for additional poins
-        self.addtional_rows = len(task_info)
+        self.addtional_rows = len(self.task_info)
 
         # Weights for columns and rows
         self.task_toplevel.columnconfigure((1), weight=2)
@@ -342,7 +353,7 @@ class Window:
         # Creating a line for each task in the task_info list
         self.task_toplevel_label = []
         self.task_toplevel_bulletpoint = []
-        for i in range(len(task_info)):
+        for i in range(len(self.task_info)):
             self.task_toplevel.rowconfigure((i), weight=2)
             # Label for bullet points (I might allow the user to change to - or a check box / other symbols if they wish to do so)
             self.task_toplevel_bulletpoint_symbol = "•" + " "
@@ -350,7 +361,7 @@ class Window:
             self.task_toplevel_bulletpoint[-1].grid(column=0, row=0+i, sticky="E")
 
             # Label for text within the task
-            self.task_toplevel_label_text = task_info[i]
+            self.task_toplevel_label_text = self.task_info[i]
             self.task_toplevel_label.append(Label(self.task_toplevel, text=self.task_toplevel_label_text, font=self.COMMON_FONT))
             self.task_toplevel_label[-1].grid(column=1, row=0+i, sticky="W")
 
@@ -362,10 +373,10 @@ class Window:
         self.task_toplevel_edit_frame.columnconfigure((0), weight=1)
         self.task_toplevel_edit_frame.rowconfigure((0), weight=1)
         self.task_toplevel_edit_button_image = PhotoImage(file= "edit_icon_photoimage.png")
-        self.task_toplevel_edit_button = Button(self.task_toplevel_edit_frame, image=self.task_toplevel_edit_button_image, command= lambda: self.tasking_edit(task_name, task_info))  
+        self.task_toplevel_edit_button = Button(self.task_toplevel_edit_frame, image=self.task_toplevel_edit_button_image, command= lambda: self.tasking_edit(task_name))  
         self.task_toplevel_edit_button.grid(column=0, row=0, sticky="NESW")
 
-    def tasking_edit(self, task_name, task_info):
+    def tasking_edit(self, task_name):
         ''' Allows the user to edit their task'''
 
         # Deletes old task text
@@ -373,7 +384,7 @@ class Window:
             self.task_toplevel_label[i].destroy()
 
         # Additional rows required
-        self.addtional_rows = len(task_info)
+        self.addtional_rows = len(self.task_info)
 
         # Change geometry
         geometry = "450x" + str(150+(self.addtional_rows*50))
@@ -381,13 +392,13 @@ class Window:
 
         # Going through the list of points in the task and creating and entry for each of them. 
         self.task_toplevel_entry = []
-        for i in range(len(task_info)):
+        for i in range(len(self.task_info)):
             # Entry for user to enter new task in
             self.task_toplevel_entry.append(Entry(self.task_toplevel, font=self.COMMON_FONT))
             self.task_toplevel_entry[-1].grid(column=1, row=0+i, sticky="NESW")
 
             # Inserting the old text
-            self.task_toplevel_label_text = task_info[i]
+            self.task_toplevel_label_text = self.task_info[i]
             self.task_toplevel_entry[-1].insert(0, self.task_toplevel_label_text)
 
         # Submit changes button frame
@@ -431,27 +442,33 @@ class Window:
 
         # Button
         self.task_toplevel_delpoint_button_text = "-" + "•"
-        self.task_toplevel_delpoint_button = Button(self.task_toplevel_delpoint_frame, text=self.task_toplevel_delpoint_button_text, font=self.COMMON_FONT, command= lambda: self.remove_point(task_info))
+        self.task_toplevel_delpoint_button = Button(self.task_toplevel_delpoint_frame, text=self.task_toplevel_delpoint_button_text, font=self.COMMON_FONT, command= lambda: self.remove_point(task_name))
         self.task_toplevel_delpoint_button.grid(column=0, row=0, sticky="NESW")
 
         # Combobox
         self.task_toplevel_delpoint_combobox = ttk.Combobox(self.task_toplevel_delpoint_frame, state="readonly")
         task_toplevel_delpoint_combobox_values = []
-        for i in range(len(task_info)):
+        for i in range(len(self.task_info)):
             task_toplevel_delpoint_combobox_values.append(1+i)
         self.task_toplevel_delpoint_combobox['values'] = task_toplevel_delpoint_combobox_values
         self.task_toplevel_delpoint_combobox.grid(column=0, row=1, sticky="NESW")
     
-    def remove_point(self, task_info):
+    def remove_point(self, task_name):
         ''' Removes points from task '''
         global saved_users
 
         point = self.task_toplevel_delpoint_combobox.get()
         if point == "":
             messagebox.showerror("Error", "Invalid input: Please enter a value in the combobox", parent=self.task_toplevel)
-        else:
-            for key, value in saved_users[self.global_profile_user_username]["profiles"].items():
-                print(task_info)
-            #print(saved_users[self.global_profile_user_username]["profiles"])
-            #with open("database.json", "w") as f:
-            #    json.dump(saved_users, f,indent=2)
+        else:  
+            point = int(point)
+            # Deletes point from database
+            del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name][point-1]
+            with open("database.json", "w") as f:
+               json.dump(saved_users, f,indent=4)
+
+            # Deletes point from GUI
+            self.task_toplevel_entry[point-1].destroy()
+            self.task_toplevel_bulletpoint[point-1].destroy()
+            
+            # To do: Delete point from combobox list, reprint task window to be reformatted
