@@ -241,7 +241,6 @@ class Window:
         task_list = []
         for task in saved_users[self.profile_user_username]["profiles"][self.profile_number]:
             task_list.append(task)
-        print(task_list)
         # print(self.profile_number) value assigned to the profile 
         # print(task_list) keys for each value within the profiles dictionary
         
@@ -340,7 +339,7 @@ class Window:
         # Opens Toplevel window that will be each task
         self.task_toplevel = Toplevel(self.root)
         self.task_toplevel.title(task_name.title())
-        self.task_toplevel.geometry("250x150")
+        #self.task_toplevel.geometry("250x150")
 
         # Additional rows required for additional poins
         self.addtional_rows = len(self.task_info)
@@ -382,12 +381,16 @@ class Window:
         # Deletes old task text
         for i in range(len(self.task_toplevel_label)):
             self.task_toplevel_label[i].destroy()
+        
+        # Sets deletion and addition values to False
+        self.del_point_run = False
+        self.add_point_run = False
 
         # Additional rows required
         self.addtional_rows = len(self.task_info)
 
         # Change geometry
-        geometry = "450x" + str(150+(self.addtional_rows*50))
+        geometry = str(450+(self.addtional_rows*50)) + "x" + str(150+(self.addtional_rows*50))
         self.task_toplevel.geometry(geometry)
 
         # Going through the list of points in the task and creating and entry for each of them. 
@@ -409,7 +412,7 @@ class Window:
         
         # Submit changes button
         self.task_toplevel_submit_button_text = "Submit"
-        self.task_toplevel_submit_button = Button(self.task_toplevel_submit_button_frame, text=self.task_toplevel_submit_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_submit_button = Button(self.task_toplevel_submit_button_frame, text=self.task_toplevel_submit_button_text, font=self.COMMON_FONT, command= lambda: self.submit_button(task_name))
         self.task_toplevel_submit_button.grid(column=0, row=0, sticky="NESW")
 
         # Cancel changes button
@@ -422,16 +425,12 @@ class Window:
         self.task_toplevel_addpoint_frame = Frame(self.task_toplevel)
         self.task_toplevel_addpoint_frame.grid(column=2+self.addtional_rows, row=0, sticky="NESW")
         self.task_toplevel_addpoint_frame.columnconfigure((0), weight=1)
-        self.task_toplevel_addpoint_frame.rowconfigure((0,1), weight=1)
+        self.task_toplevel_addpoint_frame.rowconfigure((0), weight=1)
 
         # Button
         self.task_toplevel_addpoint_button_text = "+" + "•"
-        self.task_toplevel_addpoint_button = Button(self.task_toplevel_addpoint_frame, text=self.task_toplevel_addpoint_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_addpoint_button = Button(self.task_toplevel_addpoint_frame, text=self.task_toplevel_addpoint_button_text, font=self.COMMON_FONT, command = lambda: self.add_point(task_name))
         self.task_toplevel_addpoint_button.grid(column=0, row=0, sticky="NESW")
-
-        # Entry
-        self.task_toplevel_addpoint_entry = Entry(self.task_toplevel_addpoint_frame)
-        self.task_toplevel_addpoint_entry.grid(column=0, row=1, sticky="NESW")
 
         # Delete bullet point button(s)
         # Frame
@@ -453,22 +452,64 @@ class Window:
         self.task_toplevel_delpoint_combobox['values'] = task_toplevel_delpoint_combobox_values
         self.task_toplevel_delpoint_combobox.grid(column=0, row=1, sticky="NESW")
     
+    def add_point(self, task_name):
+        ''' Adds points to the task (button will disable once a point is added, while I try find a way to let the user add multiple) '''
+        global saved_users
+
+        # Disables addpoint button
+        self.task_toplevel_addpoint_button.configure(state=DISABLED)
+
+        # Label for additional bullet points 
+        self.task_toplevel_bulletpoint.append(Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT))
+        self.task_toplevel_bulletpoint[-1].grid(column=0, row=0+len(saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]), sticky="E")
+
+        # Label for text within the task
+        self.task_toplevel_entry.append(Entry(self.task_toplevel, font=self.COMMON_FONT))
+        self.task_toplevel_entry[-1].grid(column=1, row=0+len(saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]), sticky="NESW")
+
+        # Tells submit button that there was an addition of a new point
+        self.add_point_run = True
+
+
     def remove_point(self, task_name):
         ''' Removes points from task '''
         global saved_users
 
+        # Removes point from task_window
         point = self.task_toplevel_delpoint_combobox.get()
         if point == "":
             messagebox.showerror("Error", "Invalid input: Please enter a value in the combobox", parent=self.task_toplevel)
         else:  
-            point = int(point)
-            # Deletes point from database
-            del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name][point-1]
-            with open("database.json", "w") as f:
-               json.dump(saved_users, f,indent=4)
+            # Disables delpoint button
+            self.task_toplevel_delpoint_button.configure(state=DISABLED)
+
+            # Makes point into an integer
+            self.point = int(point)
 
             # Deletes point from GUI
-            self.task_toplevel_entry[point-1].destroy()
-            self.task_toplevel_bulletpoint[point-1].destroy()
-            
+            self.task_toplevel_entry[self.point-1].destroy()
+            self.task_toplevel_bulletpoint[self.point-1].destroy()
+
+            # Tells submit button that deletion of point was run
+            self.del_point_run = True
             # To do: Delete point from combobox list, reprint task window to be reformatted
+    
+    def submit_button(self, task_name):
+        ''' Submits edits to task '''
+
+        # Checks if a point has been deleted
+        if self.del_point_run == True:
+            # Deletetion of point from database
+            del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name][self.point-1]
+
+        # Checks if a point has been added
+        if self.add_point_run == True:
+            # Addition of point to database
+            saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name].append(self.task_toplevel_entry[-1].get())
+
+        # Adds changes to database
+        with open("database.json", "w") as f:
+           json.dump(saved_users, f,indent=4)
+
+        self.task_toplevel.destroy()
+        self.tasking(task_name)
