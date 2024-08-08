@@ -470,7 +470,6 @@ class Window:
         # Tells submit button that there was an addition of a new point
         self.add_point_run = True
 
-
     def remove_point(self, task_name):
         ''' Removes points from task '''
         global saved_users
@@ -499,13 +498,21 @@ class Window:
 
         # Checks if a point has been deleted
         if self.del_point_run == True:
+            # Deletion from self.task_toplevel_entry
+            del self.task_toplevel_entry[self.point-1]
             # Deletetion of point from database
             del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name][self.point-1]
 
-        # Checks if a point has been added
-        if self.add_point_run == True:
-            # Addition of point to database
-            saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name].append(self.task_toplevel_entry[-1].get())
+        # Adds all current tasks to saved_users including any new tasks
+        for i in range(len(self.task_toplevel_entry)):
+            # Checks if a task exists in position, if task exists at position it changes task to new one, if task doesnt exist at that postion it adds it
+            try:  
+                # Edits tasks to be new tasks (will remain the same if the user hasnt changed it)
+                saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name][i] = self.task_toplevel_entry[i].get()
+                
+            except IndexError:
+                # Addition of point saved_users
+                saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name].append(self.task_toplevel_entry[-1].get())
 
         # Adds changes to database
         with open("database.json", "w") as f:
