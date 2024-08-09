@@ -417,7 +417,7 @@ class Window:
 
         # Cancel changes button
         self.task_toplevel_cancel_button_text = "Cancel"
-        self.task_toplevel_cancel_button = Button(self.task_toplevel_submit_button_frame, text=self.task_toplevel_cancel_button_text, font=self.COMMON_FONT)
+        self.task_toplevel_cancel_button = Button(self.task_toplevel_submit_button_frame, text=self.task_toplevel_cancel_button_text, font=self.COMMON_FONT, command= lambda: self.cancel_button(task_name))
         self.task_toplevel_cancel_button.grid(column=1, row=0, sticky="NESW")
 
         # Add bullet point button
@@ -493,6 +493,13 @@ class Window:
             self.del_point_run = True
             # To do: Delete point from combobox list, reprint task window to be reformatted
     
+    def cancel_button(self, task_name):
+        ''' Cancels the edits done by the user, this method will cancel the edits done and send the user back into the task screen '''
+
+        self.task_toplevel.destroy()
+        self.tasking(task_name)
+
+
     def submit_button(self, task_name):
         ''' Submits edits to task '''
 

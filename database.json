@@ -1,68 +1,124 @@
 {
-    "Username" :{
-        "password" : "Password",
-        "profiles" : {
-            "profile1":{
-                "task1":["This is task 1 for profile 1", "This is task 1 part 2 for profile 1"],
-                "task2":["This is task 2 for profile 1"],
-                "task3":["This is task 3 for profile 1"],
-                "task4":["This is task 4 for profile 1"],
-                "task5":["This is task 5 for profile 1"]              
+    "Username": {
+        "password": "Password",
+        "profiles": {
+            "profile1": {
+                "task1": {
+                    "priority":1,
+                    "tasks":[
+                    "This is task 1 part 1 for profile 1",
+                    "This is task 1 part 2 for profile 1"
+                ]
+                },
+                "task2": [
+                    "This is task 2 for profile 1",
+                    "This is task 2 part 2 for profile 1"
+                ],
+                "task3": [
+                    "This is task 3 for profile 1",
+                    "Fortnite skibidi"
+                ],
+                "task4": [
+                    "This is task 4 for profile 1"
+                ],
+                "task5": [
+                    "This is task 5 for profile 1"
+                ]
             },
-            "profile2":{
-                "task1":["This is task 1 for profile 2"],
-                "task2":["This is task 2 for profile 2"]
+            "profile2": {
+                "task1": [
+                    "This is task 1 for profile 2"
+                ],
+                "task2": [
+                    "This is task 2 for profile 2"
+                ]
             },
-            "profile3":{
-                "task1":["This is task 1 for profile 3"],
-                "task2":["This is task 2 for profile 3"]
+            "profile3": {
+                "task1": [
+                    "This is task 1 for profile 3"
+                ],
+                "task2": [
+                    "This is task 2 for profile 3"
+                ]
             },
-            "profile4":{
-                "task1":["This is task 1 for profile 4"],
-                "task2":["This is task 2 for profile 4"]
+            "profile4": {
+                "task1": [
+                    "This is task 1 for profile 4"
+                ],
+                "task2": [
+                    "This is task 2 for profile 4"
+                ]
             },
-            "profile5":{
-                "task1":["This is task 1 for profile 5"],
-                "task2":["This is task 2 for profile 5"]
+            "profile5": {
+                "task1": [
+                    "This is task 1 for profile 5"
+                ],
+                "task2": [
+                    "This is task 2 for profile 5"
+                ]
             }
         }
     },
-    "Andrew" :{
-        "password" : "Wood",
-        "profiles" : {
-            "profile1":{
-                "task1":["This is task 1 for profile 1"],
-                "task2":["This is task 2 for profile 1]"]
+    "Andrew": {
+        "password": "Wood",
+        "profiles": {
+            "profile1": {
+                "task1": [
+                    "This is task 1 for profile 1"
+                ],
+                "task2": [
+                    "This is task 2 for profile 1]"
+                ]
             },
-            "profile2":{
-                "task1":["This is task 1 for profile 2"],
-                "task2":["This is task 2 for profile 2"]
+            "profile2": {
+                "task1": [
+                    "This is task 1 for profile 2"
+                ],
+                "task2": [
+                    "This is task 2 for profile 2"
+                ]
             }
         }
     },
-    "Squeeser" :{
-        "password" : "Reed",
-        "profiles" : {
-            "profile1":{
-                "task1":["This is task 1 for profile 1"],
-                "task2":["This is task 2 for profile 1"]
+    "Squeeser": {
+        "password": "Reed",
+        "profiles": {
+            "profile1": {
+                "task1": [
+                    "This is task 1 for profile 1"
+                ],
+                "task2": [
+                    "This is task 2 for profile 1"
+                ]
             },
-            "profile2":{
-                "task1":["This is task 1 for profile 2"],
-                "task2":["This is task 2 for profile 2"]
+            "profile2": {
+                "task1": [
+                    "This is task 1 for profile 2"
+                ],
+                "task2": [
+                    "This is task 2 for profile 2"
+                ]
             }
         }
     },
-    "JHack-wantis" :{
-        "password" : "buddy-holly",
-        "profiles" : {
-            "profile1":{
-                "task1":["Passwordss :3"],
-                "task2":["Time to get freaky in the task manager😜"]
+    "JHack-wantis": {
+        "password": "buddy-holly",
+        "profiles": {
+            "profile1": {
+                "task1": [
+                    "Passwordss :3"
+                ],
+                "task2": [
+                    "Time to get freaky in the task manager\u00f0\u0178\u02dc\u0153"
+                ]
             },
-            "profile2":{
-                "task1":["This is task 1 for profile 2"],
-                "task2":["This is task 2 for profile 2"]
+            "profile2": {
+                "task1": [
+                    "This is task 1 for profile 2"
+                ],
+                "task2": [
+                    "This is task 2 for profile 2"
+                ]
             }
         }
     }
