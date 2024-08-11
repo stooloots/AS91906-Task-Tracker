@@ -237,13 +237,12 @@ class Window:
         self.task_window_frame1 = Frame(self.root)
         self.task_window_frame1.grid(column=1, row=0, sticky="NESW")
         
-        # Getting list of tasks (keys)
+        # Getting list of tasks (keys) and priority
         task_list = []
         for task in saved_users[self.profile_user_username]["profiles"][self.profile_number]:
-            task_list.append(task)
-        # print(self.profile_number) value assigned to the profile 
-        # print(task_list) keys for each value within the profiles dictionary
-        
+            task_list.append([task, saved_users[self.profile_user_username]["profiles"][self.profile_number][task]["priority"]])
+        task_list.sort(reverse=True, key=lambda x: x[1])
+
         # Setting task_window_frame1 columns, rows will be set when each task is set
         self.task_window_frame1.columnconfigure((1), weight= 4)
         self.task_window_frame1.columnconfigure((0,2), weight = 1)
@@ -266,8 +265,8 @@ class Window:
             self.template_task_frame[-1].columnconfigure((0), weight= 1)
             self.template_task_frame[-1].rowconfigure((0), weight = 1)
             # Button placed in task frame (created for tasks) located inside profile entry window
-            self.template_task_frame_text = task_list[i]
-            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i]))# task_list[i] sends task name
+            self.template_task_frame_text = task_list[i][0]
+            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i][0]))# task_list[i] sends task name
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
         
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
@@ -311,7 +310,7 @@ class Window:
         self.priority_button_frame.rowconfigure((0), weight=1)
 
         self.profile_button_text = "Change Priority"
-        self.profile_button = Button(self.priority_button_frame, text=self.profile_button_text)
+        self.profile_button = Button(self.priority_button_frame, text=self.profile_button_text, command=lambda: self.priority_change(task_list))
         self.profile_button.grid(column=0, row=0, sticky="NESW")
 
         # Task Edit button (previously delete button)
@@ -331,7 +330,7 @@ class Window:
         global saved_users
 
         # Getting the task_info
-        self.task_info = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]
+        self.task_info = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]["tasks"]
         
         # Changes recent edit label
         self.recent_edit_label_2.configure(text=task_name)
@@ -452,6 +451,50 @@ class Window:
         self.task_toplevel_delpoint_combobox['values'] = task_toplevel_delpoint_combobox_values
         self.task_toplevel_delpoint_combobox.grid(column=0, row=1, sticky="NESW")
     
+    def priority_change(self, task_list):
+        ''' Allows the user to edit the priority of each task 
+        | task | prio |new_prio| <---Entry
+        |      |      |        |
+        Frame ^
+        |      |Submit| Cancel |
+        '''
+        # Retreieves saved_users
+        global saved_users
+        print(task_list)
+
+        # Creates toplevel window and makes it grabset
+        self.priority_window = Toplevel()
+        self.priority_window.grab_set()
+
+        # Setting grid layout        
+        self.priority_window.columnconfigure((0), weight = 1)
+        self.priority_window.rowconfigure((0), weight = 1)
+        self.priority_window.rowconfigure((1), weight = 1)
+
+        # Frame for labels
+        self.priority_window_labelframe = Frame(self.priority_window)
+        self.priority_window_labelframe.grid(column=0, row=0, sticky="NESW")
+
+        # Grid for frame
+        self.priority_window_labelframe.columnconfigure((0,1), weight = 1)
+
+        # Setting labels for tasks and priority
+        self.priority_window_tasklabel = []
+        self.priority_window_priorityentry = []
+        for i in range(len(task_list)):
+            # Setting additional row weights
+            self.priority_window_labelframe.rowconfigure(((i)), weight = 1)
+            # task label
+            self.priority_window_tasklabel_text = task_list[i][0]
+            self.priority_window_tasklabel.append(Label( self.priority_window_labelframe, text=self.priority_window_tasklabel_text, font=self.COMMON_FONT))
+            self.priority_window_tasklabel[-1].grid(column=0, row=(i), sticky="NESW")
+            # entry
+            self.priority_window_priorityentry_text = task_list[i][1]
+            self.priority_window_priorityentry.append(Entry(self.priority_window_labelframe, font=self.COMMON_FONT))
+            self.priority_window_priorityentry[-1].grid(column=1, row=(i), sticky="NESW")
+            self.priority_window_priorityentry[-1].insert(0, self.priority_window_priorityentry_text)
+
+    
     def add_point(self, task_name):
         ''' Adds points to the task (button will disable once a point is added, while I try find a way to let the user add multiple) '''
         global saved_users
@@ -508,18 +551,18 @@ class Window:
             # Deletion from self.task_toplevel_entry
             del self.task_toplevel_entry[self.point-1]
             # Deletetion of point from database
-            del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name][self.point-1]
+            del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]["tasks"][self.point-1]
 
         # Adds all current tasks to saved_users including any new tasks
         for i in range(len(self.task_toplevel_entry)):
             # Checks if a task exists in position, if task exists at position it changes task to new one, if task doesnt exist at that postion it adds it
             try:  
                 # Edits tasks to be new tasks (will remain the same if the user hasnt changed it)
-                saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name][i] = self.task_toplevel_entry[i].get()
+                saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]["tasks"][i] = self.task_toplevel_entry[i].get()
                 
             except IndexError:
                 # Addition of point saved_users
-                saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name].append(self.task_toplevel_entry[-1].get())
+                saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]["tasks"].append(self.task_toplevel_entry[-1].get())
 
         # Adds changes to database
         with open("database.json", "w") as f:
