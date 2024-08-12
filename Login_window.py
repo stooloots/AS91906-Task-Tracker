@@ -309,7 +309,7 @@ class Window:
         self.priority_button_frame.columnconfigure((0), weight=1)
         self.priority_button_frame.rowconfigure((0), weight=1)
 
-        self.profile_button_text = "Change Priority"
+        self.profile_button_text = "Change Priority\n(0 - <10)"
         self.profile_button = Button(self.priority_button_frame, text=self.profile_button_text, command=lambda: self.priority_change(task_list))
         self.profile_button.grid(column=0, row=0, sticky="NESW")
 
@@ -384,17 +384,46 @@ class Window:
     def priority_submit(self, task_list):
         ''' Submits priority changes '''
 
+        # Max and min values for entry box
+        PRIORITY_MAX = 10
+        PRIORITY_MIN = 0.0
+
+        # Retrieving saved_users
         global saved_users  
 
-        for i in range(len(task_list)):
-            saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]["priority"] = self.priority_window_priorityentry[i].get()
+        #
+        priority_valid = []
+        # Runs through each entry value and checks 1) If its a float or integer, 2) if its within the range
+        for i in range(len(self.priority_window_priorityentry)):
+            # Reseting priority state
+            priority_valid.append(True)
+            
+            # Checks if entry box value is a float, if not sends error
+            try:
+                priority_value = float(self.priority_window_priorityentry[i].get())
+            except:
+                messagebox.showerror("Error", f"Invalid input on line {i+1}: Please enter an integer or decimal value in the entry", parent=self.priority_window)
+                priority_valid[i] = False # Doesn't allow for the users changes to be saved
+            
+            # Checks if the user has entered all floats / integers
+            if priority_valid[i] == True:
+                # Checks if the user has entered values outside the range
+                if priority_value >= PRIORITY_MAX or priority_value < PRIORITY_MIN:
+                    messagebox.showerror("Error", f"Invalid input on line {i+1}: Please enter a value within the range (0 - <10)", parent=self.priority_window)
+                    priority_valid[i] = False
+                else:
+                    # Changes old priority to new priority
+                    saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]["priority"] = priority_value
+        
+        # If none of the values are false the program will dump the changes
+        if False not in priority_valid:
+            # Submits changes to database.
+            with open("database.json", "w") as f:
+                json.dump(saved_users, f,indent=4)
+                
 
-        # Submits changes to database.
-        with open("database.json", "w") as f:
-           json.dump(saved_users, f,indent=4)
-
-        self.priority_window.destroy()
-        self.task_window(self.profile_number)
+            self.priority_window.destroy()
+            self.task_window(self.profile_number)
 
     def priority_cancel(self):
         ''' Closes the priority window '''
