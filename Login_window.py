@@ -240,8 +240,8 @@ class Window:
         # Getting list of tasks (keys) and priority
         task_list = []
         for task in saved_users[self.profile_user_username]["profiles"][self.profile_number]:
-            task_list.append([task, saved_users[self.profile_user_username]["profiles"][self.profile_number][task]["priority"]])
-        task_list.sort(reverse=True, key=lambda x: x[1])
+            task_list.append([saved_users[self.profile_user_username]["profiles"][self.profile_number][task]["priority"], task])
+        task_list.sort(reverse=True, key=lambda x: x[0])
 
         # Setting task_window_frame1 columns, rows will be set when each task is set
         self.task_window_frame1.columnconfigure((1), weight= 4)
@@ -265,8 +265,8 @@ class Window:
             self.template_task_frame[-1].columnconfigure((0), weight= 1)
             self.template_task_frame[-1].rowconfigure((0), weight = 1)
             # Button placed in task frame (created for tasks) located inside profile entry window
-            self.template_task_frame_text = task_list[i][0]
-            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i][0]))# task_list[i] sends task name
+            self.template_task_frame_text = task_list[i][1]
+            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i][1]))# task_list[i] sends task name
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
         
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
@@ -322,7 +322,86 @@ class Window:
         self.task_edit_button_text = "Delete Task"
         self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text)
         self.task_edit_button.grid(column=0, row=0, sticky="NESW")
+
+    def priority_change(self, task_list):
+        ''' Allows the user to edit the priority of each task 
+        | task | prio | <-- Frame
+        |      | entry| 
+        |Submit|Cancel| <-- Frame
+        '''
+        # Retreieves saved_users
+        global saved_users
+
+        # Creates toplevel window and makes it grabset
+        self.priority_window = Toplevel()
+        self.priority_window.grab_set()
+        self.priority_window.title("Priority change")
+
+        # Setting grid layout        
+        self.priority_window.columnconfigure((0), weight = 1)
+        self.priority_window.rowconfigure((0), weight = 1)
+        self.priority_window.rowconfigure((1), weight = 1)
+
+        # Frame for labels
+        self.priority_window_labelframe = Frame(self.priority_window)
+        self.priority_window_labelframe.grid(column=0, row=0, sticky="NESW")
+
+        # Grid for frame
+        self.priority_window_labelframe.columnconfigure((0,1), weight = 1)
+
+        # Setting labels for tasks and priority
+        self.priority_window_tasklabel = []
+        self.priority_window_priorityentry = []
+        for i in range(len(task_list)):
+            # Setting additional row weights
+            self.priority_window_labelframe.rowconfigure(((i)), weight = 1)
+            # task label
+            self.priority_window_tasklabel_text = task_list[i][1]
+            self.priority_window_tasklabel.append(Label( self.priority_window_labelframe, text=self.priority_window_tasklabel_text, font=self.COMMON_FONT))
+            self.priority_window_tasklabel[-1].grid(column=0, row=(i), sticky="NESW")
+            # entry
+            self.priority_window_priorityentry_text = task_list[i][0]
+            self.priority_window_priorityentry.append(Entry(self.priority_window_labelframe, font=self.COMMON_FONT))
+            self.priority_window_priorityentry[-1].grid(column=1, row=(i), sticky="NESW")
+            self.priority_window_priorityentry[-1].insert(0, self.priority_window_priorityentry_text)
+
+        # Submit changes button frame
+        self.priority_window_submit_button_frame = Frame(self.priority_window)
+        self.priority_window_submit_button_frame.grid(column=0, row=1, sticky="NESW")
+        self.priority_window_submit_button_frame.columnconfigure((0,1), weight=1)
+        self.priority_window_submit_button_frame.rowconfigure((0), weight=1)
         
+        # Submit changes button
+        self.priority_window_submit_button_text = "Submit"
+        self.priority_window_submit_button = Button(self.priority_window_submit_button_frame, text=self.priority_window_submit_button_text, font=self.COMMON_FONT, command= lambda: self.priority_submit(task_list))
+        self.priority_window_submit_button.grid(column=0, row=0, sticky="NESW")
+
+        # Cancel changes button
+        self.priority_window_cancel_button_text = "Cancel"
+        self.priority_window_cancel_button = Button(self.priority_window_submit_button_frame, text=self.priority_window_cancel_button_text, font=self.COMMON_FONT, command= lambda: self.priority_cancel())
+        self.priority_window_cancel_button.grid(column=1, row=0, sticky="NESW")
+
+    def priority_submit(self, task_list):
+        ''' Submits priority changes '''
+
+        global saved_users  
+
+        for i in range(len(task_list)):
+            saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]["priority"] = self.priority_window_priorityentry[i].get()
+
+        # Submits changes to database.
+        with open("database.json", "w") as f:
+           json.dump(saved_users, f,indent=4)
+
+        self.priority_window.destroy()
+        self.task_window(self.profile_number)
+
+    def priority_cancel(self):
+        ''' Closes the priority window '''
+
+        self.priority_window.destroy()
+        self.task_window(self.profile_number)
+
     def tasking(self, task_name):
         ''' Opens task windows'''
 
@@ -450,51 +529,7 @@ class Window:
             task_toplevel_delpoint_combobox_values.append(1+i)
         self.task_toplevel_delpoint_combobox['values'] = task_toplevel_delpoint_combobox_values
         self.task_toplevel_delpoint_combobox.grid(column=0, row=1, sticky="NESW")
-    
-    def priority_change(self, task_list):
-        ''' Allows the user to edit the priority of each task 
-        | task | prio |new_prio| <---Entry
-        |      |      |        |
-        Frame ^
-        |      |Submit| Cancel |
-        '''
-        # Retreieves saved_users
-        global saved_users
-        print(task_list)
-
-        # Creates toplevel window and makes it grabset
-        self.priority_window = Toplevel()
-        self.priority_window.grab_set()
-
-        # Setting grid layout        
-        self.priority_window.columnconfigure((0), weight = 1)
-        self.priority_window.rowconfigure((0), weight = 1)
-        self.priority_window.rowconfigure((1), weight = 1)
-
-        # Frame for labels
-        self.priority_window_labelframe = Frame(self.priority_window)
-        self.priority_window_labelframe.grid(column=0, row=0, sticky="NESW")
-
-        # Grid for frame
-        self.priority_window_labelframe.columnconfigure((0,1), weight = 1)
-
-        # Setting labels for tasks and priority
-        self.priority_window_tasklabel = []
-        self.priority_window_priorityentry = []
-        for i in range(len(task_list)):
-            # Setting additional row weights
-            self.priority_window_labelframe.rowconfigure(((i)), weight = 1)
-            # task label
-            self.priority_window_tasklabel_text = task_list[i][0]
-            self.priority_window_tasklabel.append(Label( self.priority_window_labelframe, text=self.priority_window_tasklabel_text, font=self.COMMON_FONT))
-            self.priority_window_tasklabel[-1].grid(column=0, row=(i), sticky="NESW")
-            # entry
-            self.priority_window_priorityentry_text = task_list[i][1]
-            self.priority_window_priorityentry.append(Entry(self.priority_window_labelframe, font=self.COMMON_FONT))
-            self.priority_window_priorityentry[-1].grid(column=1, row=(i), sticky="NESW")
-            self.priority_window_priorityentry[-1].insert(0, self.priority_window_priorityentry_text)
-
-    
+        
     def add_point(self, task_name):
         ''' Adds points to the task (button will disable once a point is added, while I try find a way to let the user add multiple) '''
         global saved_users
