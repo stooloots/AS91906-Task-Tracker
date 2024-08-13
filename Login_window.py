@@ -253,6 +253,7 @@ class Window:
         self.task_window_title = Label(self.task_window_frame1, text="Profile")
         self.task_window_title.grid(column=1, row=0, sticky="NESW")
         
+        # Tasks
         self.template_task_frame = []
         for i in range(len(task_list)):
             # Setting task_window_frame1 row configurations
@@ -268,7 +269,25 @@ class Window:
             self.template_task_frame_text = task_list[i][1]
             self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i][1]))# task_list[i] sends task name
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
-        
+
+        # new task button
+        # new task additional rows
+        self.new_task_additional_rows = len(self.template_task_frame)
+        # Configuring rows to add the button
+        self.task_window_frame1.rowconfigure(((self.new_task_additional_rows*2, ((self.new_task_additional_rows+1)*2))), weight = 1)
+        self.task_window_frame1.rowconfigure(((self.new_task_additional_rows*2)+1), weight = 2)
+
+        # Frame for new_task
+        self.new_task_frame = Frame(self.task_window_frame1, highlightthickness=4, highlightbackground="#7F7F7F")
+        self.new_task_frame.grid(column=1, row=((self.new_task_additional_rows*2)+1), sticky="NESW")
+        self.new_task_frame.columnconfigure((0), weight= 1)
+        self.new_task_frame.rowconfigure((0), weight = 1)
+
+        # Label
+        self.new_task_image = PhotoImage(file= "plus_photoimage.png")
+        self.new_task_button = Button(self.new_task_frame, image=self.new_task_image, relief="flat", command= lambda: self.new_task())
+        self.new_task_button.grid(column=0, row=0, sticky="NESW")
+
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
         self.task_window_frame2 = Frame(self.root)
         self.task_window_frame2.grid(column=3, row=0, sticky="NESW")
@@ -322,6 +341,32 @@ class Window:
         self.task_edit_button_text = "Delete Task"
         self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text)
         self.task_edit_button.grid(column=0, row=0, sticky="NESW")
+    
+    def new_task(self):
+        ''' Allows the user to create a new task '''
+
+        # Adds new task above new_task_button
+        # New frame
+        self.template_task_frame.append(Frame(self.task_window_frame1, borderwidth=2, relief=SOLID))
+        # additional rows and columns
+        self.new_task_additional_rows = len(self.template_task_frame)
+        self.task_window_frame1.rowconfigure(((self.new_task_additional_rows*2)), weight = 1)
+        self.task_window_frame1.rowconfigure(((self.new_task_additional_rows*2)+1), weight = 2)
+        # swaps position of new task button and new task
+        self.new_task_frame.grid(column=1, row=((self.new_task_additional_rows*2)+1), sticky="NESW")
+        # adds bottom row underneath
+        self.task_window_frame1.rowconfigure(((self.new_task_additional_rows*2)+2), weight = 2)
+        
+        # Frame and Entry
+        self.template_task_frame[-1].grid(column=1, row=(((self.new_task_additional_rows-1)*2)+1), sticky="NESW")
+        self.template_task_frame[-1].columnconfigure((0), weight= 1)
+        self.template_task_frame[-1].rowconfigure((0), weight = 1)
+
+        # Entry placed in task frame (created for tasks) located inside profile entry window
+        self.template_task_entry = Entry(self.template_task_frame[-1])
+        self.template_task_entry.grid(column=0, row=0, sticky="NESW")
+
+        
 
     def priority_change(self, task_list):
         ''' Allows the user to edit the priority of each task 
