@@ -285,7 +285,7 @@ class Window:
 
         # Label
         self.new_task_image = PhotoImage(file= "plus_photoimage.png")
-        self.new_task_button = Button(self.new_task_frame, image=self.new_task_image, relief="flat", command= lambda: self.new_task())
+        self.new_task_button = Button(self.new_task_frame, image=self.new_task_image, relief="flat", command= lambda: self.new_task(task_list))
         self.new_task_button.grid(column=0, row=0, sticky="NESW")
 
         # Frame 2 for Right side of window. This frame will include the recently editted, prioity button
@@ -342,7 +342,7 @@ class Window:
         self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text)
         self.task_edit_button.grid(column=0, row=0, sticky="NESW")
     
-    def new_task(self):
+    def new_task(self, task_list):
         ''' Allows the user to create a new task '''
 
         # Adds new task above new_task_button
@@ -363,10 +363,41 @@ class Window:
         self.template_task_frame[-1].rowconfigure((0), weight = 1)
 
         # Entry placed in task frame (created for tasks) located inside profile entry window
-        self.template_task_entry = Entry(self.template_task_frame[-1])
-        self.template_task_entry.grid(column=0, row=0, sticky="NESW")
+        self.new_task_entry = Entry(self.template_task_frame[-1])
+        self.new_task_entry.grid(column=0, row=0, sticky="NESW")
+        self.new_task_entry.insert(0, f"task {len(self.template_task_frame)}")
 
-        
+        # Disables new_task_button
+        self.new_task_button.configure(state=DISABLED)
+
+        # When the users presses enter whilst in the entry it will add the new task with, "" priority and "" tasks
+        self.new_task_entry.bind("<Return>", lambda e: self.new_task_addition(task_list))
+
+    def new_task_addition(self, task_list):
+        ''' Makes the new_task into an actual task '''
+
+        # Grabs saved_users
+        global saved_users
+
+        # Gets new_task_name
+        new_task_name = self.new_task_entry.get()
+        print(new_task_name)
+
+        # Deletes new_task_entry
+        self.new_task_entry.destroy()
+
+        # Puts button in entry's place
+        self.template_task_frame_text = new_task_name
+        self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, new_task_name))# task_list[-1][1] sends task name
+        self.template_task_button.grid(column=0, row=0, sticky="NESW")
+
+        #try:
+        saved_users[self.profile_user_username]["profiles"][self.profile_number][new_task_name] = {"priority": 0,
+                                                                                                   "tasks": []}
+        #except:
+            # If program cant excetue the addition 
+
+        task_list.append([0, f'{new_task_name}'])
 
     def priority_change(self, task_list):
         ''' Allows the user to edit the priority of each task 
@@ -611,13 +642,22 @@ class Window:
         # Disables addpoint button
         self.task_toplevel_addpoint_button.configure(state=DISABLED)
 
-        # Label for additional bullet points 
-        self.task_toplevel_bulletpoint.append(Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT))
-        self.task_toplevel_bulletpoint[-1].grid(column=0, row=0+len(saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]), sticky="E")
+        # If there are no points present in the code
+        if len(self.task_toplevel_bulletpoint) == 0:
+            # Task info
+            self.task_toplevel.rowconfigure((0), weight=2)
+            # Label for bullet points (I might allow the user to change to - or a check box / other symbols if they wish to do so)
+            self.task_toplevel_bulletpoint_symbol = "•" + " "
+            self.task_toplevel_bulletpoint.append(Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT))
+            self.task_toplevel_bulletpoint[-1].grid(column=0, row=0, sticky="E")
 
-        # Label for text within the task
-        self.task_toplevel_entry.append(Entry(self.task_toplevel, font=self.COMMON_FONT))
-        self.task_toplevel_entry[-1].grid(column=1, row=0+len(saved_users[self.profile_user_username]["profiles"][self.profile_number][task_name]), sticky="NESW")
+            # Entry for new task
+            self.task_toplevel_entry.append(Entry(self.task_toplevel, font=self.COMMON_FONT))
+            self.task_toplevel_entry[-1].grid(column=1, row=0, sticky="NESW")
+
+            # Default text for new entry
+            self.task_toplevel_label_text = "No information provided"
+            self.task_toplevel_entry[-1].insert(0, self.task_toplevel_label_text)
 
         # Tells submit button that there was an addition of a new point
         self.add_point_run = True
