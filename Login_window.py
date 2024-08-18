@@ -339,7 +339,7 @@ class Window:
         self.task_edit_button_frame.rowconfigure((0), weight=1)
 
         self.task_edit_button_text = "Delete Task"
-        self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text)
+        self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text, command= lambda: self.task_change(task_list))
         self.task_edit_button.grid(column=0, row=0, sticky="NESW")
     
     def new_task(self, task_list):
@@ -381,14 +381,13 @@ class Window:
 
         # Gets new_task_name
         new_task_name = self.new_task_entry.get()
-        print(new_task_name)
 
         # Deletes new_task_entry
         self.new_task_entry.destroy()
 
         # Puts button in entry's place
         self.template_task_frame_text = new_task_name
-        self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, new_task_name))# task_list[-1][1] sends task name
+        self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, new_task_name))
         self.template_task_button.grid(column=0, row=0, sticky="NESW")
 
         #try:
@@ -505,6 +504,122 @@ class Window:
         ''' Closes the priority window '''
 
         self.priority_window.destroy()
+        self.task_window(self.profile_number)
+
+    def task_change(self, task_list):
+        ''' Allows the user to edit names or delete each task 
+        | task  | drop do| <-- Frame
+        | entry | wn menu| 
+        |       |Delete task|
+        | Submit| Cancel | 
+        '''
+        # Retreieves saved_users
+        global saved_users
+
+        # Creates toplevel window and makes it grabset
+        self.task_adjust_window = Toplevel()
+        self.task_adjust_window.grab_set()
+        self.task_adjust_window.title("Task edit")
+
+        # Additional rows required for len of task
+        task_adjust_additional_rows = len(task_list)
+
+        # Setting grid layout        
+        self.task_adjust_window.columnconfigure((0,1), weight = 1)
+        self.task_adjust_window.rowconfigure((0, task_adjust_additional_rows), weight = 1)
+
+        # Setting labels for tasks and priority
+        self.task_adjust_window_task_entry = []
+        for i in range(len(task_list)):
+            # Setting additional row weights
+            self.task_adjust_window.rowconfigure(((i)), weight = 1)
+            # entry
+            self.task_adjust_window_task_entry_text = task_list[i][1]
+            self.task_adjust_window_task_entry.append(Entry(self.task_adjust_window, font=self.COMMON_FONT))
+            self.task_adjust_window_task_entry[-1].grid(column=0, row=(i), sticky="NESW")
+            self.task_adjust_window_task_entry[-1].insert(0, self.task_adjust_window_task_entry_text)
+        
+        # Submit changes button
+        self.task_adjust_window_submit_button_text = "Submit"
+        self.task_adjust_window_submit_button = Button(self.task_adjust_window, text=self.task_adjust_window_submit_button_text, font=self.COMMON_FONT, command= lambda: self.task_submit(task_list))
+        self.task_adjust_window_submit_button.grid(column=0, row=task_adjust_additional_rows, sticky="NESW")
+
+        # Cancel changes button
+        self.task_adjust_window_cancel_button_text = "Cancel"
+        self.task_adjust_window_cancel_button = Button(self.task_adjust_window, text=self.task_adjust_window_cancel_button_text, font=self.COMMON_FONT, command= lambda: self.task_cancel())
+        self.task_adjust_window_cancel_button.grid(column=1, row=task_adjust_additional_rows, sticky="NESW")
+
+        # Deletion frame
+        self.task_adjust_window_del_frame = Frame(self.task_adjust_window)
+        self.task_adjust_window_del_frame.grid(column=1, row=0, rowspan=2)
+
+        # Deletion frame config
+        self.task_adjust_window_del_frame.columnconfigure((0), weight=1)
+        self.task_adjust_window_del_frame.rowconfigure((0,1), weight=1)
+
+        # Combobox for task deletion
+        self.task_adjust_window_combobox = ttk.Combobox(self.task_adjust_window_del_frame, state="readonly")
+        task_adjust_window_combobox_values = []
+        for i in range(len(task_list)):
+            task_adjust_window_combobox_values.append(task_list[i][1])
+        self.task_adjust_window_combobox['values'] = task_adjust_window_combobox_values
+        self.task_adjust_window_combobox.grid(column=0, row=0, sticky="NESW")
+
+        # Button for deleting task
+        self.task_adjust_window_delete_button_text = "Delete task"
+        self.task_adjust_window_delete_button = Button(self.task_adjust_window_del_frame, text=self.task_adjust_window_delete_button_text, font=self.COMMON_FONT, command= lambda: self.task_delete(task_list))
+        self.task_adjust_window_delete_button.grid(column=0, row=1, sticky="NESW")
+
+    def task_delete(self, task_list):
+        ''' Deletes the users task from the program '''
+
+        # Grabs deleted task name
+        self.task_deletion_value = self.task_adjust_window_combobox.get()
+
+        # Checks if combo has a value
+        if self.task_deletion_value == "":
+            messagebox.showerror("Error", "Invalid input: Please enter a value in the combobox", parent=self.task_adjust_window)
+        else:  
+            for i in range(len(task_list)):
+                # Gets position of value
+                if self.task_deletion_value in task_list[i]:
+                    deleted_task_postion = i
+            # Deletes task from GUI
+            self.task_adjust_window_task_entry[deleted_task_postion].destroy()
+    
+            # Tells the program a task was deleted
+            #self.task_deletion = True
+
+        self.task_adjust_window.destroy()
+
+    def task_submit(self, task_list):
+        ''' Submits priority changes '''
+
+        # Retrieving saved_users
+        global saved_users  
+
+        # Adds changes to saved_users
+        for i in range(len(task_list)):
+            # Gets entry value
+            task_submit_value = self.task_adjust_window_task_entry[i].get()
+            
+            if task_submit_value != task_list[i][1]:
+                # Changes key in saved_users
+                saved_users[self.profile_user_username]["profiles"][self.profile_number][f"{task_submit_value}"] = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
+                del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
+        
+        # Submits changes to database.
+        with open("database.json", "w") as f:
+            json.dump(saved_users, f,indent=4)
+                
+
+        self.task_adjust_window.destroy()
+        self.task_window(self.profile_number)
+
+    def task_cancel(self):
+        ''' Closes the priority window '''
+
+        self.task_adjust_window.destroy()
         self.task_window(self.profile_number)
 
     def tasking(self, task_name):
