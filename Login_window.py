@@ -338,12 +338,15 @@ class Window:
         self.task_edit_button_frame.columnconfigure((0), weight=1)
         self.task_edit_button_frame.rowconfigure((0), weight=1)
 
-        self.task_edit_button_text = "Delete Task"
+        self.task_edit_button_text = "Edit Tasks"
         self.task_edit_button = Button(self.task_edit_button_frame, text=self.task_edit_button_text, command= lambda: self.task_change(task_list))
         self.task_edit_button.grid(column=0, row=0, sticky="NESW")
     
     def new_task(self, task_list):
         ''' Allows the user to create a new task '''
+
+        # Disabled new_task_button
+        self.new_task_button.configure(state=DISABLED)
 
         # Adds new task above new_task_button
         # New frame
@@ -372,6 +375,9 @@ class Window:
 
     def new_task_addition(self, task_list):
         ''' Makes the new_task into an actual task '''
+
+        # Re-enables new_task_button
+        self.new_task_button.configure(state=ACTIVE)
 
         # Grabs saved_users
         global saved_users
@@ -513,6 +519,9 @@ class Window:
         # Retreieves saved_users
         global saved_users
 
+        # Resets task deletion
+        self.task_deletion = False
+
         # Creates toplevel window and makes it grabset
         self.task_adjust_window = Toplevel()
         self.task_adjust_window.grab_set()
@@ -565,6 +574,9 @@ class Window:
         self.task_adjust_window_combobox['values'] = self.task_adjust_window_combobox_values
         self.task_adjust_window_combobox.grid(column=0, row=0, sticky="NESW")
 
+        # Creates a copy of task_list to use for deletion
+        #edited_task_list = task_list
+
         # Button for deleting task
         self.task_adjust_window_delete_button_text = "Delete task"
         self.task_adjust_window_delete_button = Button(self.task_adjust_window_del_frame, text=self.task_adjust_window_delete_button_text, font=self.COMMON_FONT, command= lambda: self.task_delete(task_list))
@@ -575,35 +587,31 @@ class Window:
 
         # Grabs deleted task name
         self.task_deletion_value = self.task_adjust_window_combobox.get()
-
+    
         # Checks if combo has a value
         if self.task_deletion_value == "":
             messagebox.showerror("Error", "Invalid input: Please enter a value in the combobox", parent=self.task_adjust_window)
         else:  
-            for i in range(len(task_list)):
+            for i in range(len(self.task_adjust_window_combobox_values)):
                 # Gets position of value
-                if self.task_deletion_value in task_list[i]:
+                if self.task_deletion_value == self.task_adjust_window_combobox_values[i]:
                     deleted_task_postion = i
             # Deletes task from GUI
             self.task_adjust_window_task_entry[deleted_task_postion].destroy()
+            del self.task_adjust_window_task_entry[deleted_task_postion]
 
             # Adds deleted task name and postion to list
             try:
-                self.deleted_tasks.append([task_list[deleted_task_postion][1], deleted_task_postion])
+                self.deleted_tasks.append([self.task_deletion_value, deleted_task_postion])
             except:
                 # Creates list to track deleted tasks
                 self.deleted_tasks = []
-                self.deleted_tasks.append([task_list[deleted_task_postion][1], deleted_task_postion])
+                self.deleted_tasks.append([self.task_deletion_value, deleted_task_postion])
 
             # Removes deleted task from combobox
-            print(self.task_adjust_window_combobox_values)
             del self.task_adjust_window_combobox_values[deleted_task_postion]
-            print(self.task_adjust_window_combobox_values)
             self.task_adjust_window_combobox['values'] = self.task_adjust_window_combobox_values
             self.task_adjust_window_combobox.set("")
-
-            # Prints removed tasks
-            print(self.deleted_tasks)
 
             # Tells the program a task was deleted
             self.task_deletion = True
@@ -620,10 +628,11 @@ class Window:
         if self.task_deletion == True:
             for i in range(len(self.deleted_tasks)): # Deleted tasks is formatted like [["task name", postion], ["task_name", position]]
                 del saved_users[self.profile_user_username]["profiles"][self.profile_number][self.deleted_tasks[i][0]]
+                if self.deleted_tasks[i][0] == task_list[i][0]:
+                    del task_list[i]
 
         # Adds changes to saved_users
         for i in range(len(task_list)):
-
             try:
                 # Gets entry value
                 task_submit_value = self.task_adjust_window_task_entry[i].get()
@@ -633,7 +642,6 @@ class Window:
                     del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
             except:
                 pass
-                print("skibidi")
         # Submits changes to database.
         with open("database.json", "w") as f:
             json.dump(saved_users, f,indent=4)
