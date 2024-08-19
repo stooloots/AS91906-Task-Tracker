@@ -126,6 +126,9 @@ class Window:
         # Adding the users username to the class
         self.profile_user_username = entry_user_username
 
+        # Resetting Root window
+        self.root_reset()
+
         # Changed Window sizing to fit new grid
         self.root.columnconfigure((0,2,4,6), weight= 2)
         self.root.columnconfigure((1,3,5), weight = 4)
@@ -165,10 +168,21 @@ class Window:
         self.entry_welcome_label.destroy()
         self.login_edit_frame.destroy()
         self.profile_enter_frame.destroy()
+    
+    def root_reset(self):
+        ''' Resets the root window to have no objects or weights '''
+        # Resting window config
+        for i in range(100):
+            self.root.columnconfigure((i), weight = 0)
+            self.root.rowconfigure((i), weight = 0)
+        # Destroying anything open on the screen
+        for child in self.root.winfo_children(): 
+            child.destroy()
         
     def profile_entry_window(self):
         # This window will allow the user to create groupings for tasks
 
+        # Retrieving saved_users
         global saved_users
 
         # Destroying old widgets
@@ -209,6 +223,13 @@ class Window:
             self.template_profile_frame_text = profile_list[i]
             self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, profile_list[i]))) # Fixed by Jensen # Now sends "profile_list[i] instead of task dictionary"
             self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
+        
+        # Setings / Back button
+        self.root.rowconfigure((7), weight=0)
+        self.root.columnconfigure((7), weight=0)
+        self.profile_entry_settings_button_image = PhotoImage(file= "settings_photoimage.png")
+        self.profile_entry_settings_button = Button(self.root, image=self.profile_entry_settings_button_image ,command = lambda: self.entry_window(self.profile_user_username))
+        self.profile_entry_settings_button.grid(column=7, row=7, sticky="NESW")
 
     def task_window(self, profile_tasks):
         ''' This method will open the task window where all tasks are visible, profile_tasks is the tasks dictionary taken from the profile '''
