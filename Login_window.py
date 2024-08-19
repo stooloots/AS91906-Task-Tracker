@@ -99,9 +99,14 @@ class Window:
         self.root.mainloop()
 
     def entry_getter(self, *args):
+        ''' Gets the username and password from their entries'''
         global saved_users
+
+        # Gets username and password
         users_username = self.username_entry.get()
         users_password = self.password_entry.get()
+
+        # Validates username and password
         if users_username in saved_users:
             if saved_users[users_username]["password"] == users_password:
                 self.login.destroy()
@@ -112,6 +117,7 @@ class Window:
             messagebox.showerror("Error", "Invalid input: Please enter the correct username or password", parent=self.root)
         
     def entry_remove(self, entry):
+        ''' Removes default values when users hovers cursor over entry '''
         if entry == self.username_entry:
             if self.username_entry.get() == "Username":
                 entry.delete(0, END)
@@ -121,7 +127,7 @@ class Window:
                 entry.configure(show="*")
     
     def entry_window(self, entry_user_username):
-        # Entry window screen 
+        ''' Entry window screen '''
 
         # Adding the users username to the class
         self.profile_user_username = entry_user_username
@@ -189,6 +195,7 @@ class Window:
         self.entry_welcome_label.destroy()
         self.login_edit_frame.destroy()
         self.profile_enter_frame.destroy()
+        self.root_reset()
 
         # Setting root column and row configs 
         self.root.columnconfigure((0,2,4,6), weight= 2)
@@ -223,20 +230,250 @@ class Window:
             self.template_profile_frame_text = profile_list[i]
             self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, profile_list[i]))) # Fixed by Jensen # Now sends "profile_list[i] instead of task dictionary"
             self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
+
+        # Profile add button
+        # Frame new profile button
+        self.new_profile_frame = Frame(self.root, highlightthickness=4, highlightbackground="#7F7F7F")
+        self.new_profile_frame.grid(column=((len(profile_list))%3)*2+1, row= math.floor((len(profile_list))/3)*2+1, sticky="NESW")
+        self.new_profile_frame.columnconfigure((0), weight= 1)
+        self.new_profile_frame.rowconfigure((0), weight = 1)
+
+        # Button for new profile frame
+        self.new_profile_iamge = PhotoImage(file= "plus_photoimage.png")
+        self.new_profile_button = Button(self.new_profile_frame, image=self.new_profile_iamge, relief="flat", command= lambda: self.new_profile(profile_list))
+        self.new_profile_button.grid(column=0, row=0, sticky="NESW")
+
+        # Profile edit button (includes deletion)
+        # Frame edit proifle button
+        self.profile_edit_frame = Frame(self.root, borderwidth=2, relief=SOLID)
+        self.profile_edit_frame.grid(column=5, row= math.floor((((len(profile_list)+1)/3)*2+1)+3), sticky="NESW")
+        self.profile_edit_frame.columnconfigure((0), weight= 1)
+        self.profile_edit_frame.rowconfigure((0), weight = 1)
+
+        # Button for profile edit frame
+        self.profile_edit_text = "Edit Profiles"
+        self.profile_edit_button = Button(self.profile_edit_frame, text=self.profile_edit_text, command= lambda: self.profile_edit(profile_list))
+        self.profile_edit_button.grid(column=0, row=0, sticky="NESW")
+
+        # Moves settings button to match
+        settings_button_position = {"column":6, "row":math.floor((((len(profile_list)+1)/3)*2+1)+3)}
+        # Adds settings button
+        self.settings_button(settings_button_position)
+    
+    def profile_edit(self, profile_list):
+        ''' Method that allows the user to edit their profiles / name / delete profiles'''
+
+        # Retreieves saved_users
+        global saved_users
+
+        # Resets profile deletion
+        self.profile_deletion = False
+
+        # Creates toplevel window and makes it grabset
+        self.profile_adjust_window = Toplevel()
+        self.profile_adjust_window.grab_set()
+        self.profile_adjust_window.title("Profile edit")
+
+        # Additional rows required for len of profile
+        profile_adjust_additional_rows = len(profile_list)
+
+        # Setting grid layout        
+        self.profile_adjust_window.columnconfigure((0,1), weight = 1)
+        self.profile_adjust_window.rowconfigure((0, profile_adjust_additional_rows), weight = 1)
+
+        # Setting labels for profiles
+        self.profile_adjust_window_name_entry = []
+        for i in range(len(profile_list)):
+            # Setting additional row weights
+            self.profile_adjust_window.rowconfigure(((i)), weight = 1)
+            # entry
+            self.profile_adjust_window_name_entry_text = profile_list[i]
+            self.profile_adjust_window_name_entry.append(Entry(self.profile_adjust_window, font=self.COMMON_FONT))
+            self.profile_adjust_window_name_entry[-1].grid(column=0, row=(i), sticky="NESW")
+            self.profile_adjust_window_name_entry[-1].insert(0, self.profile_adjust_window_name_entry_text)
         
-        # Setings / Back button
-        self.root.rowconfigure((7), weight=0)
-        self.root.columnconfigure((7), weight=0)
+        # Submit changes button
+        self.profile_adjust_window_submit_button_text = "Submit"
+        self.profile_adjust_window_submit_button = Button(self.profile_adjust_window, text=self.profile_adjust_window_submit_button_text, font=self.COMMON_FONT, command= lambda: self.profile_submit(profile_list))
+        self.profile_adjust_window_submit_button.grid(column=0, row=profile_adjust_additional_rows, sticky="NESW")
+
+        # Cancel changes button
+        self.profile_adjust_window_cancel_button_text = "Cancel"
+        self.profile_adjust_window_cancel_button = Button(self.profile_adjust_window, text=self.profile_adjust_window_cancel_button_text, font=self.COMMON_FONT, command= lambda: self.profile_cancel())
+        self.profile_adjust_window_cancel_button.grid(column=1, row=profile_adjust_additional_rows, sticky="NESW")
+
+        # Deletion frame
+        self.profile_adjust_window_del_frame = Frame(self.profile_adjust_window)
+        self.profile_adjust_window_del_frame.grid(column=1, row=0, rowspan=2)
+
+        # Deletion frame config
+        self.profile_adjust_window_del_frame.columnconfigure((0), weight=1)
+        self.profile_adjust_window_del_frame.rowconfigure((0,1), weight=1)
+
+        # Combobox for profile deletion
+        # Reseting deleted profiles
+        self.deleted_profiles = []
+        # Combobox
+        self.profile_adjust_window_combobox = ttk.Combobox(self.profile_adjust_window_del_frame, state="readonly")
+        self.profile_adjust_window_combobox_values = []
+        for i in range(len(profile_list)):
+            self.profile_adjust_window_combobox_values.append(profile_list[i])
+        self.profile_adjust_window_combobox['values'] = self.profile_adjust_window_combobox_values
+        self.profile_adjust_window_combobox.grid(column=0, row=0, sticky="NESW")
+
+        # Button for deleting profile
+        self.profile_adjust_window_delete_button_text = "Delete profile"
+        self.profile_adjust_window_delete_button = Button(self.profile_adjust_window_del_frame, text=self.profile_adjust_window_delete_button_text, font=self.COMMON_FONT, command= lambda: self.profile_delete(profile_list))
+        self.profile_adjust_window_delete_button.grid(column=0, row=1, sticky="NESW")
+
+    def profile_delete(self, profile_list):
+        ''' Allows for the deletion of profiles from the program'''
+
+        # Grabs deleted profile name
+        self.profile_deletion_value = self.profile_adjust_window_combobox.get()
+    
+        # Checks if combo has a value
+        if self.profile_deletion_value == "":
+            messagebox.showerror("Error", "Invalid input: Please enter a value in the combobox", parent=self.profile_adjust_window)
+        else:  
+            for i in range(len(self.profile_adjust_window_combobox_values)):
+                # Gets position of value
+                if self.profile_deletion_value == self.profile_adjust_window_combobox_values[i]:
+                    deleted_profile_postion = i
+            # Deletes profile from GUI
+            self.profile_adjust_window_name_entry[deleted_profile_postion].destroy()
+            del self.profile_adjust_window_name_entry[deleted_profile_postion]
+
+            # Adds deleted profile name and postion to list
+            try:
+                self.deleted_profiles.append([self.profile_deletion_value, deleted_profile_postion])
+            except:
+                # Creates list to track deleted profiles
+                self.deleted_profiles = []
+                self.deleted_profiles.append([self.profile_deletion_value, deleted_profile_postion])
+
+            # Removes deleted profile from combobox
+            del self.profile_adjust_window_combobox_values[deleted_profile_postion]
+            self.profile_adjust_window_combobox['values'] = self.profile_adjust_window_combobox_values
+            self.profile_adjust_window_combobox.set("")
+
+            # Tells the program a profile was deleted
+            self.profile_deletion = True
+
+        #self.profile_adjust_window.destroy()
+
+
+    def profile_submit(self, profile_list):
+        ''' Submits the edited profile names and changes'''
+
+        # Retrieving saved_users
+        global saved_users  
+
+        # Checks if the user has deleted a profile
+        if self.profile_deletion == True:
+            for i in range(len(self.deleted_profiles)): # Deleted profiles is formatted like [["profile name", postion], ["profile_name", position]]
+                del saved_users[self.profile_user_username]["profiles"][self.deleted_profiles[i][0]]
+                if self.deleted_profiles[i][0] == profile_list[i]:
+                    del profile_list[i]
+
+        # Adds changes to saved_users
+        for i in range(len(profile_list)):
+            try:
+                # Gets entry value
+                profile_submit_value = self.profile_adjust_window_name_entry[i].get()
+                if profile_submit_value != profile_list[i]:
+                    # Changes key in saved_users
+                    saved_users[self.profile_user_username]["profiles"][f"{profile_submit_value}"] = saved_users[self.profile_user_username]["profiles"][profile_list[i]]
+                    del saved_users[self.profile_user_username]["profiles"][profile_list[i]]
+            except:
+                pass
+        # Submits changes to database.
+        with open("database.json", "w") as f:
+            json.dump(saved_users, f,indent=4)
+                
+
+        self.profile_adjust_window.destroy()
+        self.profile_entry_window()
+
+    def profile_cancel(self):
+        ''' Cancels the edits done to the profile names / deletion'''
+        # Destroys window
+        self.profile_adjust_window.destroy()
+
+    
+    def settings_button(self, positioning):
+        ''' Method that adds a settings button to the bottom right of the page'''
+        # Settings / Back button
+        self.root.rowconfigure((positioning["column"]), weight=0)
+        self.root.columnconfigure((positioning["row"]), weight=0)
         self.profile_entry_settings_button_image = PhotoImage(file= "settings_photoimage.png")
         self.profile_entry_settings_button = Button(self.root, image=self.profile_entry_settings_button_image ,command = lambda: self.entry_window(self.profile_user_username))
-        self.profile_entry_settings_button.grid(column=7, row=7, sticky="NESW")
+        self.profile_entry_settings_button.grid(column=positioning["column"], row=positioning["row"], sticky="NESW")
+
+    def new_profile(self, profile_list):
+        ''' This method allows the user to create new profiles'''
+
+        # Disabled new_profile_button
+        self.new_profile_button.configure(state=DISABLED)
+
+        # Adds new profile in replacement for new_profile_button
+        # New frame
+        self.template_profile_frame.append(Frame(self.root, borderwidth=2, relief=SOLID))
+
+        # Moving new_profile_button and profile_edit_button
+        self.new_profile_frame.grid(column=((len(profile_list)+1)%3)*2+1, row= math.floor((len(profile_list)+1)/3)*2+1, sticky="NESW")
+        # Frame and Entry
+        self.template_profile_frame[-1].grid(column=((len(profile_list))%3)*2+1, row= math.floor((len(profile_list))/3)*2+1, sticky="NESW")
+        self.template_profile_frame[-1].columnconfigure((0), weight= 1)
+        self.template_profile_frame[-1].rowconfigure((0), weight = 1)
+
+        # Entry placed in profile frame (created for profile) located inside profile entry window
+        self.new_profile_entry = Entry(self.template_profile_frame[-1], justify='center')
+        self.new_profile_entry.grid(column=0, row=0, sticky="NESW")
+        self.new_profile_entry.insert(0, f"Profile {len(profile_list)+1}")
+
+        # When the users presses enter whilst in the entry it will add the new task with, "" priority and "" tasks
+        self.new_profile_entry.bind("<Return>", lambda e: self.new_profile_addition(profile_list))
+
+    def new_profile_addition(self, profile_list):
+        ''' This method adds the new profile to the database'''
+
+        # Re-enables new_profile_button
+        self.new_profile_button.configure(state=ACTIVE)
+
+        # Grabs saved_users
+        global saved_users
+
+        # Gets new_task_name
+        new_profile_name = self.new_profile_entry.get()
+
+        # Deletes new_task_entry
+        self.new_profile_entry.destroy()
+
+        # Puts button in entry's place
+        self.template_profile_frame_text = new_profile_name
+        self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, new_profile_name))) 
+        self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
+
+        saved_users[self.profile_user_username]["profiles"][new_profile_name] = {}
+
+        with open("database.json", "w") as f:
+            json.dump(saved_users, f,indent=4)
 
     def task_window(self, profile_tasks):
         ''' This method will open the task window where all tasks are visible, profile_tasks is the tasks dictionary taken from the profile '''
         # profile tasks is a name
         # eg "profile 1", "profile 2"
 
+        # Retreive saved_users
         global saved_users
+
+        # Reseting page config
+        self.root_reset()
+
+        # Adds settings button
+        settings_button_position = {"column":5, "row":1}
+        self.settings_button(settings_button_position)
 
         # Adds the profile_task selected into the class
         self.profile_number = profile_tasks
@@ -250,9 +487,7 @@ class Window:
         self.root.columnconfigure((0,4), weight= 1)
         self.root.columnconfigure((1,3), weight = 4)
         self.root.columnconfigure((2), weight=12)
-        self.root.columnconfigure((5,6,7,8,9),weight=0)
         self.root.rowconfigure((0), weight = 1)
-        self.root.rowconfigure((1,2,3,4,5,6,7,8), weight = 0)
 
         # Frame 1 for left side of task window. This frame will include the title and the listed tasks section
         self.task_window_frame1 = Frame(self.root)
@@ -587,6 +822,7 @@ class Window:
         # Combobox for task deletion
         # Reseting deleted tasks
         self.deleted_tasks = []
+
         # Combobox
         self.task_adjust_window_combobox = ttk.Combobox(self.task_adjust_window_del_frame, state="readonly")
         self.task_adjust_window_combobox_values = []
@@ -594,9 +830,6 @@ class Window:
             self.task_adjust_window_combobox_values.append(task_list[i][1])
         self.task_adjust_window_combobox['values'] = self.task_adjust_window_combobox_values
         self.task_adjust_window_combobox.grid(column=0, row=0, sticky="NESW")
-
-        # Creates a copy of task_list to use for deletion
-        #edited_task_list = task_list
 
         # Button for deleting task
         self.task_adjust_window_delete_button_text = "Delete task"
@@ -667,8 +900,9 @@ class Window:
         with open("database.json", "w") as f:
             json.dump(saved_users, f,indent=4)
                 
-
+        # Deletes task_adjust_window
         self.task_adjust_window.destroy()
+        # Re-opens task_window
         self.task_window(self.profile_number)
 
     def task_cancel(self):
@@ -812,22 +1046,21 @@ class Window:
         # Disables addpoint button
         self.task_toplevel_addpoint_button.configure(state=DISABLED)
 
-        # If there are no points present in the code
-        if len(self.task_toplevel_bulletpoint) == 0:
-            # Task info
-            self.task_toplevel.rowconfigure((0), weight=2)
-            # Label for bullet points (I might allow the user to change to - or a check box / other symbols if they wish to do so)
-            self.task_toplevel_bulletpoint_symbol = "•" + " "
-            self.task_toplevel_bulletpoint.append(Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT))
-            self.task_toplevel_bulletpoint[-1].grid(column=0, row=0, sticky="E")
+        # Task info
+        self.task_toplevel.rowconfigure((0), weight=2)
+        
+        # Label for bullet points (I might allow the user to change to - or a check box / other symbols if they wish to do so)
+        self.task_toplevel_bulletpoint_symbol = "•" + " "
+        self.task_toplevel_bulletpoint.append(Label(self.task_toplevel, text=self.task_toplevel_bulletpoint_symbol, font=self.COMMON_FONT))
+        self.task_toplevel_bulletpoint[-1].grid(column=0, row=(len(self.task_toplevel_entry)), sticky="E")
+        
+        # Entry for new task
+        self.task_toplevel_entry.append(Entry(self.task_toplevel, font=self.COMMON_FONT))
+        self.task_toplevel_entry[-1].grid(column=1, row=(len(self.task_toplevel_entry)-1), sticky="NESW")
 
-            # Entry for new task
-            self.task_toplevel_entry.append(Entry(self.task_toplevel, font=self.COMMON_FONT))
-            self.task_toplevel_entry[-1].grid(column=1, row=0, sticky="NESW")
-
-            # Default text for new entry
-            self.task_toplevel_label_text = "No information provided"
-            self.task_toplevel_entry[-1].insert(0, self.task_toplevel_label_text)
+        # Default text for new entry
+        self.task_toplevel_label_text = "No information provided"
+        self.task_toplevel_entry[-1].insert(0, self.task_toplevel_label_text)
 
         # Tells submit button that there was an addition of a new point
         self.add_point_run = True
