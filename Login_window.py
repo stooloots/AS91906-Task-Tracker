@@ -367,9 +367,6 @@ class Window:
         self.new_task_entry.grid(column=0, row=0, sticky="NESW")
         self.new_task_entry.insert(0, f"task {len(self.template_task_frame)}")
 
-        # Disables new_task_button
-        self.new_task_button.configure(state=DISABLED)
-
         # When the users presses enter whilst in the entry it will add the new task with, "" priority and "" tasks
         self.new_task_entry.bind("<Return>", lambda e: self.new_task_addition(task_list))
 
@@ -558,11 +555,14 @@ class Window:
         self.task_adjust_window_del_frame.rowconfigure((0,1), weight=1)
 
         # Combobox for task deletion
+        # Reseting deleted tasks
+        self.deleted_tasks = []
+        # Combobox
         self.task_adjust_window_combobox = ttk.Combobox(self.task_adjust_window_del_frame, state="readonly")
-        task_adjust_window_combobox_values = []
+        self.task_adjust_window_combobox_values = []
         for i in range(len(task_list)):
-            task_adjust_window_combobox_values.append(task_list[i][1])
-        self.task_adjust_window_combobox['values'] = task_adjust_window_combobox_values
+            self.task_adjust_window_combobox_values.append(task_list[i][1])
+        self.task_adjust_window_combobox['values'] = self.task_adjust_window_combobox_values
         self.task_adjust_window_combobox.grid(column=0, row=0, sticky="NESW")
 
         # Button for deleting task
@@ -586,11 +586,29 @@ class Window:
                     deleted_task_postion = i
             # Deletes task from GUI
             self.task_adjust_window_task_entry[deleted_task_postion].destroy()
-    
-            # Tells the program a task was deleted
-            #self.task_deletion = True
 
-        self.task_adjust_window.destroy()
+            # Adds deleted task name and postion to list
+            try:
+                self.deleted_tasks.append([task_list[deleted_task_postion][1], deleted_task_postion])
+            except:
+                # Creates list to track deleted tasks
+                self.deleted_tasks = []
+                self.deleted_tasks.append([task_list[deleted_task_postion][1], deleted_task_postion])
+
+            # Removes deleted task from combobox
+            print(self.task_adjust_window_combobox_values)
+            del self.task_adjust_window_combobox_values[deleted_task_postion]
+            print(self.task_adjust_window_combobox_values)
+            self.task_adjust_window_combobox['values'] = self.task_adjust_window_combobox_values
+            self.task_adjust_window_combobox.set("")
+
+            # Prints removed tasks
+            print(self.deleted_tasks)
+
+            # Tells the program a task was deleted
+            self.task_deletion = True
+
+        #self.task_adjust_window.destroy()
 
     def task_submit(self, task_list):
         ''' Submits priority changes '''
@@ -598,16 +616,24 @@ class Window:
         # Retrieving saved_users
         global saved_users  
 
+        # Checks if the user has deleted a task
+        if self.task_deletion == True:
+            for i in range(len(self.deleted_tasks)): # Deleted tasks is formatted like [["task name", postion], ["task_name", position]]
+                del saved_users[self.profile_user_username]["profiles"][self.profile_number][self.deleted_tasks[i][0]]
+
         # Adds changes to saved_users
         for i in range(len(task_list)):
-            # Gets entry value
-            task_submit_value = self.task_adjust_window_task_entry[i].get()
-            
-            if task_submit_value != task_list[i][1]:
-                # Changes key in saved_users
-                saved_users[self.profile_user_username]["profiles"][self.profile_number][f"{task_submit_value}"] = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
-                del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
-        
+
+            try:
+                # Gets entry value
+                task_submit_value = self.task_adjust_window_task_entry[i].get()
+                if task_submit_value != task_list[i][1]:
+                    # Changes key in saved_users
+                    saved_users[self.profile_user_username]["profiles"][self.profile_number][f"{task_submit_value}"] = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
+                    del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
+            except:
+                pass
+                print("skibidi")
         # Submits changes to database.
         with open("database.json", "w") as f:
             json.dump(saved_users, f,indent=4)
