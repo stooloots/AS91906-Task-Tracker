@@ -228,7 +228,7 @@ class Window:
             self.template_profile_frame[-1].rowconfigure((0), weight = 1)
             # Button place in frame (created for profile) located inside profile entry window
             self.template_profile_frame_text = profile_list[i]
-            self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, profile_list[i]))) # Fixed by Jensen # Now sends "profile_list[i] instead of task dictionary"
+            self.template_profile_button.append(Button(self.template_profile_frame[-1], wraplength=100, text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, profile_list[i]))) # Fixed by Jensen # Now sends "profile_list[i] instead of task dictionary"
             self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
 
         # Profile add button
@@ -523,7 +523,7 @@ class Window:
             self.template_task_frame[-1].rowconfigure((0), weight = 1)
             # Button placed in task frame (created for tasks) located inside profile entry window
             self.template_task_frame_text = task_list[i][1]
-            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i][1]))# task_list[i] sends task name
+            self.template_task_button = Button(self.template_task_frame[-1], wraplength=100, text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, task_list[i][1]))# task_list[i] sends task name
             self.template_task_button.grid(column=0, row=0, sticky="NESW")
 
         # new task button
@@ -973,6 +973,9 @@ class Window:
         self.del_point_run = False
         self.add_point_run = False
 
+        # Disabling self.task_toplevel_edit_button button
+        self.task_toplevel_edit_button.configure(state=DISABLED)
+
         # Additional rows required
         self.addtional_rows = len(self.task_info)
 
@@ -1097,6 +1100,9 @@ class Window:
 
     def submit_button(self, task_name):
         ''' Submits edits to task '''
+
+        # Re enabling task edit button
+        self.task_toplevel_edit_button.configure(state=ACTIVE)
 
         # Checks if a point has been deleted
         if self.del_point_run == True:
