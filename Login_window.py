@@ -376,22 +376,29 @@ class Window:
                 if self.deleted_profiles[i][0] == profile_list[i]:
                     del profile_list[i]
 
+        # Validating user input for duplicates
+
         # Adds changes to saved_users
         for i in range(len(profile_list)):
             try:
                 # Gets entry value
                 profile_submit_value = self.profile_adjust_window_name_entry[i].get()
+
                 if profile_submit_value != profile_list[i]:
-                    # Changes key in saved_users
-                    saved_users[self.profile_user_username]["profiles"][f"{profile_submit_value}"] = saved_users[self.profile_user_username]["profiles"][profile_list[i]]
-                    del saved_users[self.profile_user_username]["profiles"][profile_list[i]]
+                    # Checks if value is already a name
+                    if profile_submit_value in profile_list:
+                        messagebox.showerror("Error", "Invalid input: Please enter none-duplicate name in the entry box", parent=self.root)
+                    else:
+                        # Changes key in saved_users
+                        saved_users[self.profile_user_username]["profiles"][f"{profile_submit_value}"] = saved_users[self.profile_user_username]["profiles"][profile_list[i]]
+                        del saved_users[self.profile_user_username]["profiles"][profile_list[i]]
             except:
                 pass
         # Submits changes to database.
         with open("database.json", "w") as f:
             json.dump(saved_users, f,indent=4)
                 
-
+        # Re-opens entry window 
         self.profile_adjust_window.destroy()
         self.profile_entry_window()
 
@@ -399,7 +406,6 @@ class Window:
         ''' Cancels the edits done to the profile names / deletion'''
         # Destroys window
         self.profile_adjust_window.destroy()
-
     
     def settings_button(self, positioning):
         ''' Method that adds a settings button to the bottom right of the page'''
@@ -444,21 +450,25 @@ class Window:
         # Grabs saved_users
         global saved_users
 
-        # Gets new_task_name
+        # Gets new_profile_name
         new_profile_name = self.new_profile_entry.get()
 
-        # Deletes new_task_entry
-        self.new_profile_entry.destroy()
+        # Checks for duplicate names of profiles
+        if new_profile_name in saved_users[self.profile_user_username]["profiles"]:
+            messagebox.showerror("Error", "Invalid input: Please enter none-duplicate name in the entry box", parent=self.root)
+        else:
+            # Deletes new_profile_entry
+            self.new_profile_entry.destroy()
 
-        # Puts button in entry's place
-        self.template_profile_frame_text = new_profile_name
-        self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, new_profile_name))) 
-        self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
+            # Puts button in entry's place
+            self.template_profile_frame_text = new_profile_name
+            self.template_profile_button.append(Button(self.template_profile_frame[-1], text=self.template_profile_frame_text, anchor="n", command=partial(self.task_window, new_profile_name))) 
+            self.template_profile_button[-1].grid(column=0, row=0, sticky="NESW")
 
-        saved_users[self.profile_user_username]["profiles"][new_profile_name] = {}
+            saved_users[self.profile_user_username]["profiles"][new_profile_name] = {}
 
-        with open("database.json", "w") as f:
-            json.dump(saved_users, f,indent=4)
+            with open("database.json", "w") as f:
+                json.dump(saved_users, f,indent=4)
 
     def task_window(self, profile_tasks):
         ''' This method will open the task window where all tasks are visible, profile_tasks is the tasks dictionary taken from the profile '''
@@ -641,21 +651,23 @@ class Window:
         # Gets new_task_name
         new_task_name = self.new_task_entry.get()
 
-        # Deletes new_task_entry
-        self.new_task_entry.destroy()
+        # validates new_task_name
+        if new_task_name in saved_users[self.profile_user_username]["profiles"][self.profile_number]:
+            messagebox.showerror("Error", "Invalid input: Please enter a none duplicate value in the entry", parent=self.root)
+        else:
+            # Deletes new_task_entry
+            self.new_task_entry.destroy()
 
-        # Puts button in entry's place
-        self.template_task_frame_text = new_task_name
-        self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, new_task_name))
-        self.template_task_button.grid(column=0, row=0, sticky="NESW")
+            # Puts button in entry's place
+            self.template_task_frame_text = new_task_name
+            self.template_task_button = Button(self.template_task_frame[-1], text=self.template_task_frame_text, anchor="n", command= partial(self.tasking, new_task_name))
+            self.template_task_button.grid(column=0, row=0, sticky="NESW")
 
-        #try:
-        saved_users[self.profile_user_username]["profiles"][self.profile_number][new_task_name] = {"priority": 0,
-                                                                                                   "tasks": []}
-        #except:
-            # If program cant excetue the addition 
-
-        task_list.append([0, f'{new_task_name}'])
+            # Adds to saved_users
+            saved_users[self.profile_user_username]["profiles"][self.profile_number][new_task_name] = {"priority": 0,
+                                                                                                    "tasks": []}
+            # Adds to task_list
+            task_list.append([0, f'{new_task_name}'])
 
     def priority_change(self, task_list):
         ''' Allows the user to edit the priority of each task 
@@ -884,17 +896,27 @@ class Window:
                 del saved_users[self.profile_user_username]["profiles"][self.profile_number][self.deleted_tasks[i][0]]
                 if self.deleted_tasks[i][0] == task_list[i][0]:
                     del task_list[i]
-
+        
         # Adds changes to saved_users
         for i in range(len(task_list)):
             try:
                 # Gets entry value
                 task_submit_value = self.task_adjust_window_task_entry[i].get()
                 if task_submit_value != task_list[i][1]:
-                    # Changes key in saved_users
-                    saved_users[self.profile_user_username]["profiles"][self.profile_number][f"{task_submit_value}"] = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
-                    del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
+                    # Checks if value is already a name
+                    task_error = False
+                    for items in task_list:
+                        if task_submit_value == items[1]:
+                            task_error = True
+                    # If value is existing give error, else go through
+                    if task_error == True:
+                        messagebox.showerror("Error", "Invalid input: Please enter none-duplicate name in the entry box", parent=self.root)
+                    else:
+                        # Changes key in saved_users
+                        saved_users[self.profile_user_username]["profiles"][self.profile_number][f"{task_submit_value}"] = saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
+                        del saved_users[self.profile_user_username]["profiles"][self.profile_number][task_list[i][1]]
             except:
+                print("error")
                 pass
         # Submits changes to database.
         with open("database.json", "w") as f:
