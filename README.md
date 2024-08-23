@@ -4,6 +4,9 @@
 
 ## Installing: To instal the program the user must first un-zip the folder they have been supplied with. Once unzipped the user should be able to view the contents which includes the following files; database.json, edit_icon_photoimage.png, information.json, information_photoimage.png, Login_window.py, main.py, off_photoimage.png, on_photoimage.png, password_photoimage.png, plus_photoimage.png, settings_photoimage.png, username_photoimage.png. If the user is missing any of these files the program will not run and will give many errors. Before opening the main.py file the user needs to have python install on their device, have and ide or run through the python console and have all libraries required installed. I personally reccomending using Visual Studio Code for this process. Make sure to install python on the device and the following python libraries; **Tkinter, functools, json and math**. Once all the libraries and python is installed on the device the user can now run the "main.py" file. This will run the file and if libraries are install the program should work. To find out how to use the program you can either use the inbuilt informaton button or you can refer to the next section of the readme file.
 
+## Make sure the libraries are installed before running the program
+These libraries are; **Tkinter, functools, json and math**
+
 ## Instructions for use: 
 Instructions for use can be found as the test plan and also bellow. 
 Login and select screen
